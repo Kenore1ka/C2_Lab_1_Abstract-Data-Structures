@@ -1,16 +1,17 @@
 #include "linkedList.h"
-
 #include <cstring>
 #include <fstream>
 #include <iostream>
 
 using namespace std;
 
+// Инициализация списка, устанавливая начальные указатели head и tail в nullptr.
 void LinkedList::init() {
     head = nullptr;
     tail = nullptr;
 }
 
+// Добавление нового узла со значением `value` в начало списка.
 void LinkedList::addToHead(const string& value) {
     ListNode* newNode = new ListNode{value, head};
     head = newNode;
@@ -19,6 +20,7 @@ void LinkedList::addToHead(const string& value) {
     }
 }
 
+// Добавление нового узла со значением `value` в конец списка.
 void LinkedList::addToTail(const string& value) {
     ListNode* newNode = new ListNode{value, nullptr};
     if (tail != nullptr) {
@@ -30,6 +32,7 @@ void LinkedList::addToTail(const string& value) {
     }
 }
 
+// Удаление узла с головы списка.
 void LinkedList::removeFromHead() {
     if (head == nullptr) {
         return;
@@ -42,6 +45,7 @@ void LinkedList::removeFromHead() {
     }
 }
 
+// Удаление узла с конца списка.
 void LinkedList::removeFromTail() {
     if (tail == nullptr) {
         return;
@@ -61,6 +65,7 @@ void LinkedList::removeFromTail() {
     tail->next = nullptr;
 }
 
+// Удаление первого узла со значением `value` в списке.
 void LinkedList::removeByValue(const string& value) {
     if (head == nullptr) {
         return;
@@ -84,6 +89,7 @@ void LinkedList::removeByValue(const string& value) {
     }
 }
 
+// Поиск элемента со значением `value` в списке.
 bool LinkedList::search(const string& value) {
     ListNode* temp = head;
     while (temp != nullptr) {
@@ -95,6 +101,7 @@ bool LinkedList::search(const string& value) {
     return false;
 }
 
+// Печать всех элементов списка.
 void LinkedList::print() {
     ListNode* temp = head;
     while (temp != nullptr) {
@@ -104,12 +111,14 @@ void LinkedList::print() {
     cout << endl;
 }
 
+// Освобождение всех узлов списка.
 void LinkedList::destroy() {
     while (head != nullptr) {
         removeFromHead();
     }
 }
 
+// Загрузка элементов из файла и добавление их в конец списка.
 void LinkedList::loadFromFile(const string& fileName) {
     ifstream file(fileName);
     string value;
@@ -119,6 +128,7 @@ void LinkedList::loadFromFile(const string& fileName) {
     file.close();
 }
 
+// Сохранение всех элементов списка в файл.
 void LinkedList::saveToFile(const string& fileName) {
     ofstream file(fileName);
     ListNode* temp = head;
@@ -129,6 +139,7 @@ void LinkedList::saveToFile(const string& fileName) {
     file.close();
 }
 
+// Функция запуска работы со списком, обработка команд из аргументов командной строки.
 void runLinkedList(int argc, char* argv[]) {
     LinkedList list;
     list.init();

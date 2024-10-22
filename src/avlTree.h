@@ -2,39 +2,44 @@
 
 #include <string>
 
+// Определение структуры узла для AVL дерева
 struct Node {
-    std::string key;
-    int height;
-    Node* left;
-    Node* right;
+    std::string key; // Ключ, хранимый в узле
+    int height;      // Высота узла для поддержки балансировки
+    Node* left;      // Указатель на левое поддерево
+    Node* right;     // Указатель на правое поддерево
 
+    // Конструктор, инициализирующий узел с заданным ключом
     Node(const std::string& key) : key(key), height(1), left(nullptr), right(nullptr) {}
 };
 
+// Определение класса AVL дерева
 class AVLTree {
    public:
-    AVLTree() : root(nullptr) {}
+    AVLTree() : root(nullptr) {} // Конструктор AVL дерева, инициализирует пустое дерево
 
-    void insert(const std::string& key);
-    void remove(const std::string& key);
-    bool search(const std::string& key);
-    void print();
-    void saveToFile(const std::string& fileName);
-    void loadFromFile(const std::string& fileName);
+    void insert(const std::string& key);       // Вставляет ключ в дерево
+    void remove(const std::string& key);       // Удаляет ключ из дерева
+    bool search(const std::string& key);       // Проверяет наличие ключа в дереве
+    void print();                              // Выводит все ключи дерева
+    void saveToFile(const std::string& fileName); // Сохраняет дерево в файл
+    void loadFromFile(const std::string& fileName); // Загружает дерево из файла
 
    private:
-    Node* root;
+    Node* root; // Корень дерева
 
-    int getHeight(Node* node);
-    int getBalanceFactor(Node* node);
-    Node* rotateLeft(Node* node);
-    Node* rotateRight(Node* node);
-    Node* rebalance(Node* node);
-    Node* insertNode(Node* node, const std::string& key);
-    Node* removeNode(Node* node, const std::string& key);
-    void printNode(Node* node);
-    void saveNode(Node* node, std::ofstream& file);
-    void loadNode(std::ifstream& file);
+    // Вспомогательные функции для внутренней работы AVL дерева
+    int getHeight(Node* node);                   // Возвращает высоту узла
+    int getBalanceFactor(Node* node);            // Вычисляет баланс-фактор узла
+    Node* rotateLeft(Node* node);                // Выполняет левый поворот
+    Node* rotateRight(Node* node);               // Выполняет правый поворот
+    Node* rebalance(Node* node);                 // Выполняет балансировку дерева
+    Node* insertNode(Node* node, const std::string& key); // Вспомогательная функция для вставки
+    Node* removeNode(Node* node, const std::string& key); // Вспомогательная функция для удаления
+    void printNode(Node* node);                  // Вспомогательная функция для печати
+    void saveNode(Node* node, std::ofstream& file); // Вспомогательная функция для сохранения узлов
+    void loadNode(std::ifstream& file);          // Вспомогательная функция для загрузки узлов
 };
 
+// Функция для запуска AVL дерева с параметрами командной строки
 void runAVLTree(int argc, char* argv[]);
