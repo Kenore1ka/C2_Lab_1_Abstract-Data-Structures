@@ -159,7 +159,7 @@ void runDynamicArray(int argc, char* argv[]) {
         arr.saveToFile(fileName);         // Сохранение изменений в файл
     } else if (command == "MLEN") {
         cout << arr.length() << endl;     // Вывод текущего размера массива
-    } else if (command == "PRINT") {
+    } else if (command == "MPRINT") {
         arr.print();                      // Вывод всех элементов массива
     } else if (command == "MGET") {
         int index = stoi(query);

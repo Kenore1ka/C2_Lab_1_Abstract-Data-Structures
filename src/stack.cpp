@@ -113,7 +113,7 @@ void runStack(int argc, char* argv[]) {
     } else if (command == "SPOP") {
         stack.pop();
         stack.saveToFile(fileName);
-    } else if (command == "PRINT") {
+    } else if (command == "SPRINT") {
         stack.print();
     }
 

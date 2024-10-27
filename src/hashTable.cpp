@@ -183,7 +183,7 @@ void runHashTable(int argc, char* argv[]) {
     } else if (command == "HDEL") { // Удаление узла по ключу
         remove(query);
         saveToFile(fileName);
-    } else if (command == "PRINT") { // Вывод всех значений хеш-таблицы
+    } else if (command == "HPRINT") { // Вывод всех значений хеш-таблицы
         printTable();
     }
 

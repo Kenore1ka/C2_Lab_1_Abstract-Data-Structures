@@ -248,7 +248,7 @@ void runAVLTree(int argc, char* argv[]) {
         tree.saveToFile(fileName);
     } else if (command == "TSEARCH") {
         cout << (tree.search(query) ? "true" : "false") << endl;
-    } else if (command == "PRINT") {
+    } else if (command == "TPRINT") {
         tree.print();
     }
 }
