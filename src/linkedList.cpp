@@ -169,23 +169,23 @@ void runLinkedList(int argc, char* argv[]) {
     }
 
     if (command == "LPUSH") {
-        list.addToHead(query);
+        list.addToHead(query);  // Добавление элемента в начало списка
         list.saveToFile(fileName);
     } else if (command == "LAPPEND") {
-        list.addToTail(query);
+        list.addToTail(query);  // Добавление элемента в конец списка
         list.saveToFile(fileName);
     } else if (command == "LREMOVEHEAD") {
-        list.removeFromHead();
+        list.removeFromHead();  // Удаление элемента с головы списка
         list.saveToFile(fileName);
     } else if (command == "LREMOVETAIL") {
-        list.removeFromTail();
+        list.removeFromTail();  // Удаление элемента с конца списка
         list.saveToFile(fileName);
     } else if (command == "LREMOVE") {
-        list.removeByValue(query);
+        list.removeByValue(query);  // Удаление элемента по значению
         list.saveToFile(fileName);
     } else if (command == "LSEARCH") {
-        cout << (list.search(query) ? "true" : "false") << endl;
-    } else if (command == "PRINT") {
+        cout << (list.search(query) ? "true" : "false") << endl;    // Поиск элемента по значению
+    } else if (command == "LPRINT") {
         list.print();
     }
 

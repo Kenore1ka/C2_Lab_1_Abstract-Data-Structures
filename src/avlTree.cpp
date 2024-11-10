@@ -250,5 +250,11 @@ void runAVLTree(int argc, char* argv[]) {
         cout << (tree.search(query) ? "true" : "false") << endl;
     } else if (command == "TPRINT") {
         tree.print();
+    } else if (command == "TGET") {
+        if (tree.search(query)) {
+            cout << query << endl; // Выводит ключ, если он найден
+        } else {
+            cout << "Key not found" << endl;
+        }
     }
 }
