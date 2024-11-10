@@ -18,4 +18,4 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $(BUILD_DIR)/$(TARGET)
 
 clean:
-	rm -rf $(BUILD_DIR)/*
+	rm -f $(BUILD_DIR)/*.o $(BUILD_DIR)/$(TARGET)
