@@ -103,7 +103,7 @@ void runQueue(int argc, char* argv[]) {
     } else if (command == "QPOP") {
         queue.dequeue(); // Удаление элемента из очереди.
         queue.saveToFile(fileName); // Сохранение состояния очереди в файл.
-    } else if (command == "PRINT") {
+    } else if (command == "QPRINT") {
         queue.print(); // Вывод элементов очереди.
     }
 

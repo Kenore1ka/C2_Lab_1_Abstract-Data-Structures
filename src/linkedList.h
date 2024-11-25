@@ -2,30 +2,31 @@
 
 #include <string>
 
-// Узел списка, содержащий данные и указатель на следующий узел.
+// Узел двусвязного списка.
 struct ListNode {
     std::string data;     // Данные, хранящиеся в узле.
     ListNode* next;       // Указатель на следующий узел.
+    ListNode* prev;       // Указатель на предыдущий узел.
 };
 
-// Связный список, содержащий указатели на первый и последний узлы, а также методы для управления списком.
+// Двусвязный список с указателями на начало и конец.
 struct LinkedList {
     ListNode* head;       // Указатель на первый элемент списка.
     ListNode* tail;       // Указатель на последний элемент списка.
 
-    // Функции инициализации и управления списком
+    // Методы для работы с двусвязным списком.
     void init();                          // Инициализирует пустой список.
-    void addToHead(const std::string& value);  // Добавляет узел со значением `value` в начало списка.
-    void addToTail(const std::string& value);  // Добавляет узел со значением `value` в конец списка.
-    void removeFromHead();                // Удаляет узел с головы списка.
-    void removeFromTail();                // Удаляет узел с конца списка.
-    void removeByValue(const std::string& value); // Удаляет первый узел с указанным значением.
-    bool search(const std::string& value); // Ищет узел по значению, возвращает true, если найдено.
-    void print();                         // Печатает все узлы списка.
-    void destroy();                       // Удаляет все узлы списка и освобождает память.
-    void loadFromFile(const std::string& fileName); // Загружает данные в список из файла.
-    void saveToFile(const std::string& fileName);   // Сохраняет данные списка в файл.
+    void addToHead(const std::string& value);  // Добавить элемент в начало.
+    void addToTail(const std::string& value);  // Добавить элемент в конец.
+    void removeFromHead();                // Удалить элемент с головы.
+    void removeFromTail();                // Удалить элемент с хвоста.
+    void removeByValue(const std::string& value); // Удалить по значению.
+    bool search(const std::string& value); // Поиск по значению.
+    void print();                         // Вывод элементов списка.
+    void destroy();                       // Очистка списка.
+    void loadFromFile(const std::string& fileName); // Загрузка из файла.
+    void saveToFile(const std::string& fileName);   // Сохранение в файл.
 };
 
-// Функция для запуска списка с аргументами командной строки.
+// Запуск списка с использованием командной строки.
 void runLinkedList(int argc, char* argv[]);

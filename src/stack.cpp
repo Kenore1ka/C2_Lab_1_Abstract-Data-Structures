@@ -14,9 +14,19 @@ void Stack::init() {
 // Добавление элемента в стек.
 void Stack::push(const string& value) {
     // Создаем новый узел стека.
-    StackNode* newNode = new StackNode{value, top}; 
-    // Новый узел становится вершиной стека.
-    top = newNode;
+    StackNode* newNode = new StackNode{value, nullptr};
+    // Если стек пуст, новый узел становится вершиной стека.
+    if (top == nullptr) {
+        top = newNode;
+    } else {
+        // Иначе, находим последний элемент стека.
+        StackNode* temp = top;
+        while (temp->next != nullptr) {
+            temp = temp->next;
+        }
+        // Новый узел становится следующим после последнего элемента.
+        temp->next = newNode;
+    }
 }
 
 // Удаление элемента из стека.
@@ -25,12 +35,20 @@ void Stack::pop() {
     if (top == nullptr) {
         return;
     }
-    // Временный указатель на вершину стека.
-    StackNode* temp = top;
-    // Вершиной стека становится следующий элемент.
-    top = top->next;
-    // Удаляем старый вершинный элемент.
-    delete temp;
+    // Если в стеке только один элемент, удаляем его.
+    if (top->next == nullptr) {
+        delete top;
+        top = nullptr;
+    } else {
+        // Иначе, находим предпоследний элемент стека.
+        StackNode* temp = top;
+        while (temp->next->next != nullptr) {
+            temp = temp->next;
+        }
+        // Удаляем последний элемент.
+        delete temp->next;
+        temp->next = nullptr;
+    }
 }
 
 // Вывод содержимого стека в консоль.
