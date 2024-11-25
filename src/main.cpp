@@ -7,6 +7,7 @@
 #include "avlTree.h"
 #include "hashTable.h"
 #include "linkedList.h"
+#include "llinkedList.h"
 #include "queue.h"
 #include "stack.h"
 
@@ -41,6 +42,8 @@ int main(int argc, char* argv[]) {
         runDynamicArray(argc, argv);
     } else if (query[0] == 'L') {      // Если команда начинается с 'L', выполняется функция для связного списка.
         runLinkedList(argc, argv);
+    } else if (query[0] == 'LL'){
+        runLLinkedList(argc, argv);
     } else if (query[0] == 'Q') {      // Если команда начинается с 'Q', выполняется функция для очереди.
         runQueue(argc, argv);
     } else if (query[0] == 'S') {      // Если команда начинается с 'S', выполняется функция для стека.
