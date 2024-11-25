@@ -5,24 +5,27 @@
 
 using namespace std;
 
-// Инициализация списка, устанавливая начальные указатели head и tail в nullptr.
+// Инициализация списка.
 void LinkedList::init() {
     head = nullptr;
     tail = nullptr;
 }
 
-// Добавление нового узла со значением `value` в начало списка.
+// Добавление нового элемента в начало.
 void LinkedList::addToHead(const string& value) {
-    ListNode* newNode = new ListNode{value, head};
+    ListNode* newNode = new ListNode{value, head, nullptr};
+    if (head != nullptr) {
+        head->prev = newNode;
+    }
     head = newNode;
     if (tail == nullptr) {
         tail = head;
     }
 }
 
-// Добавление нового узла со значением `value` в конец списка.
+// Добавление нового элемента в конец.
 void LinkedList::addToTail(const string& value) {
-    ListNode* newNode = new ListNode{value, nullptr};
+    ListNode* newNode = new ListNode{value, nullptr, tail};
     if (tail != nullptr) {
         tail->next = newNode;
     }
@@ -32,64 +35,59 @@ void LinkedList::addToTail(const string& value) {
     }
 }
 
-// Удаление узла с головы списка.
+// Удаление элемента с головы.
 void LinkedList::removeFromHead() {
     if (head == nullptr) {
         return;
     }
     ListNode* temp = head;
     head = head->next;
-    delete temp;
-    if (head == nullptr) {
+    if (head != nullptr) {
+        head->prev = nullptr;
+    } else {
         tail = nullptr;
     }
+    delete temp;
 }
 
-// Удаление узла с конца списка.
+// Удаление элемента с хвоста.
 void LinkedList::removeFromTail() {
     if (tail == nullptr) {
         return;
     }
-    if (head == tail) {
-        delete head;
+    ListNode* temp = tail;
+    tail = tail->prev;
+    if (tail != nullptr) {
+        tail->next = nullptr;
+    } else {
         head = nullptr;
-        tail = nullptr;
-        return;
     }
-    ListNode* temp = head;
-    while (temp->next != tail) {
-        temp = temp->next;
-    }
-    delete tail;
-    tail = temp;
-    tail->next = nullptr;
+    delete temp;
 }
 
-// Удаление первого узла со значением `value` в списке.
+// Удаление узла по значению.
 void LinkedList::removeByValue(const string& value) {
-    if (head == nullptr) {
-        return;
-    }
-    if (head->data == value) {
-        removeFromHead();
-        return;
-    }
     ListNode* temp = head;
-    while (temp->next != nullptr) {
-        if (temp->next->data == value) {
-            ListNode* nodeToRemove = temp->next;
-            temp->next = temp->next->next;
-            if (nodeToRemove == tail) {
-                tail = temp;
+    while (temp != nullptr) {
+        if (temp->data == value) {
+            if (temp->prev != nullptr) {
+                temp->prev->next = temp->next;
+            } else {
+                head = temp->next;
             }
-            delete nodeToRemove;
+            if (temp->next != nullptr) {
+                temp->next->prev = temp->prev;
+            } else {
+                tail = temp->prev;
+            }
+            delete temp;
             return;
         }
         temp = temp->next;
     }
 }
 
-// Поиск элемента со значением `value` в списке.
+// Поиск элемента по значению.
 bool LinkedList::search(const string& value) {
     ListNode* temp = head;
     while (temp != nullptr) {
@@ -101,7 +99,7 @@ bool LinkedList::search(const string& value) {
     return false;
 }
 
-// Печать всех элементов списка.
+// Вывод всех элементов списка.
 void LinkedList::print() {
     ListNode* temp = head;
     while (temp != nullptr) {
@@ -111,14 +109,14 @@ void LinkedList::print() {
     cout << endl;
 }
 
-// Освобождение всех узлов списка.
+// Очистка списка.
 void LinkedList::destroy() {
     while (head != nullptr) {
         removeFromHead();
     }
 }
 
-// Загрузка элементов из файла и добавление их в конец списка.
+// Загрузка элементов из файла.
 void LinkedList::loadFromFile(const string& fileName) {
     ifstream file(fileName);
     string value;
@@ -128,7 +126,7 @@ void LinkedList::loadFromFile(const string& fileName) {
     file.close();
 }
 
-// Сохранение всех элементов списка в файл.
+// Сохранение элементов списка в файл.
 void LinkedList::saveToFile(const string& fileName) {
     ofstream file(fileName);
     ListNode* temp = head;
