@@ -2,19 +2,19 @@
 
 #include <string>
 
-// Узел односвязного списка.
-struct ListNode {
+// Узел двусвязного списка.
+struct DlistNode {
     std::string data;     // Данные, хранящиеся в узле.
-    ListNode* next;       // Указатель на следующий узел.
+    DlistNode* next;       // Указатель на следующий узел.
+    DlistNode* prev;       // Указатель на предыдущий узел.
 };
 
-// Односвязный список с указателями на начало и конец.
-class LinkedList {
-public:
-    ListNode* head;       // Указатель на первый элемент списка.
-    ListNode* tail;       // Указатель на последний элемент списка.
+// Двусвязный список с указателями на начало и конец.
+struct DlinkedList {
+    DlistNode* head;       // Указатель на первый элемент списка.
+    DlistNode* tail;       // Указатель на последний элемент списка.
 
-    // Методы для работы с односвязным списком.
+    // Методы для работы с двусвязным списком.
     void init();                          // Инициализирует пустой список.
     void addToHead(const std::string& value);  // Добавить элемент в начало.
     void addToTail(const std::string& value);  // Добавить элемент в конец.
@@ -29,4 +29,4 @@ public:
 };
 
 // Запуск списка с использованием командной строки.
-void runLinkedList(int argc, char* argv[]);
+void runLLinkedList(int argc, char* argv[]);
