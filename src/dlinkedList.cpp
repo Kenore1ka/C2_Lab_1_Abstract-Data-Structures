@@ -1,4 +1,4 @@
-#include "llinkedList.h"
+#include "dlinkedList.h"
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -6,14 +6,14 @@
 using namespace std;
 
 // Инициализация списка.
-void LinkedList::init() {
+void DlinkedList::init() {
     head = nullptr;
     tail = nullptr;
 }
 
 // Добавление нового элемента в начало.
-void LinkedList::addToHead(const string& value) {
-    ListNode* newNode = new ListNode{value, head, nullptr};
+void DlinkedList::addToHead(const string& value) {
+    DlistNode* newNode = new DlistNode{value, head, nullptr};
     if (head != nullptr) {
         head->prev = newNode;
     }
@@ -24,8 +24,8 @@ void LinkedList::addToHead(const string& value) {
 }
 
 // Добавление нового элемента в конец.
-void LinkedList::addToTail(const string& value) {
-    ListNode* newNode = new ListNode{value, nullptr, tail};
+void DlinkedList::addToTail(const string& value) {
+    DlistNode* newNode = new DlistNode{value, nullptr, tail};
     if (tail != nullptr) {
         tail->next = newNode;
     }
@@ -36,11 +36,11 @@ void LinkedList::addToTail(const string& value) {
 }
 
 // Удаление элемента с головы.
-void LinkedList::removeFromHead() {
+void DlinkedList::removeFromHead() {
     if (head == nullptr) {
         return;
     }
-    ListNode* temp = head;
+    DlistNode* temp = head;
     head = head->next;
     if (head != nullptr) {
         head->prev = nullptr;
@@ -51,11 +51,11 @@ void LinkedList::removeFromHead() {
 }
 
 // Удаление элемента с хвоста.
-void LinkedList::removeFromTail() {
+void DlinkedList::removeFromTail() {
     if (tail == nullptr) {
         return;
     }
-    ListNode* temp = tail;
+    DlistNode* temp = tail;
     tail = tail->prev;
     if (tail != nullptr) {
         tail->next = nullptr;
@@ -66,8 +66,8 @@ void LinkedList::removeFromTail() {
 }
 
 // Удаление узла по значению.
-void LinkedList::removeByValue(const string& value) {
-    ListNode* temp = head;
+void DlinkedList::removeByValue(const string& value) {
+    DlistNode* temp = head;
     while (temp != nullptr) {
         if (temp->data == value) {
             if (temp->prev != nullptr) {
@@ -88,8 +88,8 @@ void LinkedList::removeByValue(const string& value) {
 }
 
 // Поиск элемента по значению.
-bool LinkedList::search(const string& value) {
-    ListNode* temp = head;
+bool DlinkedList::search(const string& value) {
+    DlistNode* temp = head;
     while (temp != nullptr) {
         if (temp->data == value) {
             return true;
@@ -100,8 +100,8 @@ bool LinkedList::search(const string& value) {
 }
 
 // Вывод всех элементов списка.
-void LinkedList::print() {
-    ListNode* temp = head;
+void DlinkedList::print() {
+    DlistNode* temp = head;
     while (temp != nullptr) {
         cout << temp->data << " ";
         temp = temp->next;
@@ -110,14 +110,14 @@ void LinkedList::print() {
 }
 
 // Очистка списка.
-void LinkedList::destroy() {
+void DlinkedList::destroy() {
     while (head != nullptr) {
         removeFromHead();
     }
 }
 
 // Загрузка элементов из файла.
-void LinkedList::loadFromFile(const string& fileName) {
+void DlinkedList::loadFromFile(const string& fileName) {
     ifstream file(fileName);
     string value;
     while (file >> value) {
@@ -127,9 +127,9 @@ void LinkedList::loadFromFile(const string& fileName) {
 }
 
 // Сохранение элементов списка в файл.
-void LinkedList::saveToFile(const string& fileName) {
+void DlinkedList::saveToFile(const string& fileName) {
     ofstream file(fileName);
-    ListNode* temp = head;
+    DlistNode* temp = head;
     while (temp != nullptr) {
         file << temp->data << endl;
         temp = temp->next;
@@ -138,8 +138,8 @@ void LinkedList::saveToFile(const string& fileName) {
 }
 
 // Функция запуска работы со списком, обработка команд из аргументов командной строки.
-void runLinkedList(int argc, char* argv[]) {
-    LinkedList list;
+void runLLinkedList(int argc, char* argv[]) {
+    DlinkedList list;
     list.init();
 
     string fileName;
@@ -166,24 +166,24 @@ void runLinkedList(int argc, char* argv[]) {
         command = query;
     }
 
-    if (command == "LLPUSH") {
+    if (command == "DPUSH") {
         list.addToHead(query);  // Добавление элемента в начало списка
         list.saveToFile(fileName);
-    } else if (command == "LLAPPEND") {
+    } else if (command == "DAPPEND") {
         list.addToTail(query);  // Добавление элемента в конец списка
         list.saveToFile(fileName);
-    } else if (command == "LLREMOVEHEAD") {
+    } else if (command == "DREMOVEHEAD") {
         list.removeFromHead();  // Удаление элемента с головы списка
         list.saveToFile(fileName);
-    } else if (command == "LLREMOVETAIL") {
+    } else if (command == "DREMOVETAIL") {
         list.removeFromTail();  // Удаление элемента с конца списка
         list.saveToFile(fileName);
-    } else if (command == "LLREMOVE") {
+    } else if (command == "DREMOVE") {
         list.removeByValue(query);  // Удаление элемента по значению
         list.saveToFile(fileName);
-    } else if (command == "LLSEARCH") {
+    } else if (command == "DSEARCH") {
         cout << (list.search(query) ? "true" : "false") << endl;    // Поиск элемента по значению
-    } else if (command == "LLPRINT") {
+    } else if (command == "DPRINT") {
         list.print();
     }
 

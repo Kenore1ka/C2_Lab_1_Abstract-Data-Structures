@@ -1,156 +1,132 @@
 #include "linkedList.h"
 #include <iostream>
-#include <cstring>
 #include <fstream>
+#include <cstring>
 
 using namespace std;
 
-// Структура узла списка
-struct ListNode {
-    string data;
-    ListNode* next;
-};
+void LinkedList::init() {
+    head = nullptr;
+    tail = nullptr;
+}
 
-class LinkedList {
-private:
-    ListNode* head; // Указатель на голову списка
-    ListNode* tail; // Указатель на хвост списка
+void LinkedList::addToHead(const string& value) {
+    ListNode* newNode = new ListNode{value, head};
+    head = newNode;
+    if (tail == nullptr) {
+        tail = head;
+    }
+}
 
-public:
-    // Инициализация списка
-    void init() {
-        head = nullptr;
+void LinkedList::addToTail(const string& value) {
+    ListNode* newNode = new ListNode{value, nullptr};
+    if (tail != nullptr) {
+        tail->next = newNode;
+    }
+    tail = newNode;
+    if (head == nullptr) {
+        head = tail;
+    }
+}
+
+void LinkedList::removeFromHead() {
+    if (head == nullptr) {
+        return;
+    }
+    ListNode* temp = head;
+    head = head->next;
+    if (head == nullptr) {
         tail = nullptr;
     }
+    delete temp;
+}
 
-    // Добавление нового элемента в начало
-    void addToHead(const string& value) {
-        ListNode* newNode = new ListNode{value, head};
-        head = newNode;
-        if (tail == nullptr) {
-            tail = head;
-        }
+void LinkedList::removeFromTail() {
+    if (tail == nullptr) {
+        return;
     }
-
-    // Добавление нового элемента в конец
-    void addToTail(const string& value) {
-        ListNode* newNode = new ListNode{value, nullptr};
-        if (tail != nullptr) {
-            tail->next = newNode;
-        }
-        tail = newNode;
-        if (head == nullptr) {
-            head = tail;
-        }
+    if (head == tail) {
+        delete head;
+        head = nullptr;
+        tail = nullptr;
+        return;
     }
-
-    // Удаление элемента с головы
-    void removeFromHead() {
-        if (head == nullptr) {
-            return;
-        }
-        ListNode* temp = head;
-        head = head->next;
-        if (head == nullptr) {
-            tail = nullptr;
-        }
-        delete temp;
+    ListNode* temp = head;
+    while (temp->next != tail) {
+        temp = temp->next;
     }
+    delete tail;
+    tail = temp;
+    tail->next = nullptr;
+}
 
-    // Удаление элемента с хвоста
-    void removeFromTail() {
-        if (tail == nullptr) {
-            return;
-        }
-        if (head == tail) {
-            delete head;
-            head = nullptr;
-            tail = nullptr;
-            return;
-        }
-        ListNode* temp = head;
-        while (temp->next != tail) {
-            temp = temp->next;
-        }
-        delete tail;
-        tail = temp;
-        tail->next = nullptr;
+void LinkedList::removeByValue(const string& value) {
+    if (head == nullptr) {
+        return;
     }
-
-    // Удаление узла по значению
-    void removeByValue(const string& value) {
-        if (head == nullptr) {
-            return;
-        }
-        if (head->data == value) {
-            removeFromHead();
-            return;
-        }
-        ListNode* temp = head;
-        while (temp->next != nullptr) {
-            if (temp->next->data == value) {
-                ListNode* nodeToRemove = temp->next;
-                temp->next = temp->next->next;
-                if (nodeToRemove == tail) {
-                    tail = temp;
-                }
-                delete nodeToRemove;
-                return;
+    if (head->data == value) {
+        removeFromHead();
+        return;
+    }
+    ListNode* temp = head;
+    while (temp->next != nullptr) {
+        if (temp->next->data == value) {
+            ListNode* nodeToRemove = temp->next;
+            temp->next = temp->next->next;
+            if (nodeToRemove == tail) {
+                tail = temp;
             }
-            temp = temp->next;
+            delete nodeToRemove;
+            return;
         }
+        temp = temp->next;
     }
+}
 
-    // Поиск элемента по значению
-    bool search(const string& value) {
-        ListNode* temp = head;
-        while (temp != nullptr) {
-            if (temp->data == value) {
-                return true;
-            }
-            temp = temp->next;
+bool LinkedList::search(const string& value) {
+    ListNode* temp = head;
+    while (temp != nullptr) {
+        if (temp->data == value) {
+            return true;
         }
-        return false;
+        temp = temp->next;
     }
+    return false;
+}
 
-    // Вывод всех элементов списка
-    void print() {
-        ListNode* temp = head;
-        while (temp != nullptr) {
-            cout << temp->data << " ";
-            temp = temp->next;
-        }
-        cout << endl;
+void LinkedList::print() {
+    ListNode* temp = head;
+    while (temp != nullptr) {
+        cout << temp->data << " ";
+        temp = temp->next;
     }
+    cout << endl;
+}
 
-    // Очистка списка
-    void destroy() {
-        while (head != nullptr) {
-            removeFromHead();
-        }
+void LinkedList::destroy() {
+    while (head != nullptr) {
+        removeFromHead();
     }
+}
 
-    // Загрузка элементов из файла
-    void loadFromFile(const string& fileName) {
-        ifstream file(fileName);
-        string value;
-        while (file >> value) {
-            addToTail(value);
-        }
-        file.close();
+void LinkedList::loadFromFile(const string& fileName) {
+    ifstream file(fileName);
+    string value;
+    while (file >> value) {
+        addToTail(value);
     }
+    file.close();
+}
 
-    // Сохранение элементов списка в файл
-    void saveToFile(const string& fileName) {
-        ofstream file(fileName);
-        ListNode* temp = head;
-        while (temp != nullptr) {
-            file << temp->data << endl;
-            temp = temp->next;
-        }
-        file.close();
+void LinkedList::saveToFile(const string& fileName) {
+    ofstream file(fileName);
+    ListNode* temp = head;
+    while (temp != nullptr) {
+        file << temp->data << endl;
+        temp = temp->next;
     }
-};
+    file.close();
+}
 
 // Функция запуска работы со списком, обработка команд из аргументов командной строки
 void runLinkedList(int argc, char* argv[]) {

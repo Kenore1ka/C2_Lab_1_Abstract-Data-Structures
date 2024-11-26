@@ -3,16 +3,16 @@
 #include <string>
 
 // Узел двусвязного списка.
-struct ListNode {
+struct DlistNode {
     std::string data;     // Данные, хранящиеся в узле.
-    ListNode* next;       // Указатель на следующий узел.
-    ListNode* prev;       // Указатель на предыдущий узел.
+    DlistNode* next;       // Указатель на следующий узел.
+    DlistNode* prev;       // Указатель на предыдущий узел.
 };
 
 // Двусвязный список с указателями на начало и конец.
-struct LinkedList {
-    ListNode* head;       // Указатель на первый элемент списка.
-    ListNode* tail;       // Указатель на последний элемент списка.
+struct DlinkedList {
+    DlistNode* head;       // Указатель на первый элемент списка.
+    DlistNode* tail;       // Указатель на последний элемент списка.
 
     // Методы для работы с двусвязным списком.
     void init();                          // Инициализирует пустой список.
@@ -29,4 +29,4 @@ struct LinkedList {
 };
 
 // Запуск списка с использованием командной строки.
-void runLinkedList(int argc, char* argv[]);
+void runLLinkedList(int argc, char* argv[]);

@@ -3,6 +3,7 @@
 #include <cstring> // Для strcmp
 #include <fstream> // Для работы с файлами
 #include <iostream>
+#include <functional>
 
 using namespace std;
 
