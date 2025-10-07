@@ -22,5 +22,4 @@ struct DynamicArray {
     void saveToFile(const std::string& fileName);   // Сохранение элементов массива в файл
 };
 
-// Функция, управляющая динамическим массивом на основе командной строки
 void runDynamicArray(int argc, char* argv[]);

@@ -4,7 +4,7 @@
 #include <string>
 
 #include "array.h"
-#include "avlTree.h"
+#include "binaryTree.h"
 #include "hashTable.h"
 #include "linkedList.h"
 #include "dlinkedList.h"
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
     } else if (query[0] == 'H') {      // Если команда начинается с 'H', выполняется функция для хэш-таблицы.
         runHashTable(argc, argv);
     } else if (query[0] == 'T') {      // Если команда начинается с 'T', выполняется функция для AVL-дерева.
-        runAVLTree(argc, argv);
+        runBinaryTree(argc, argv);
     }
 
     return 0; // Завершение программы.
