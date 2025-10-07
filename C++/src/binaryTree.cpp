@@ -8,7 +8,6 @@
 
 using namespace std;
 
-// ================== Конструктор / деструктор ==================
 BinaryTree::BinaryTree() : root(nullptr) {}
 
 BinaryTree::~BinaryTree() {
@@ -22,7 +21,7 @@ void BinaryTree::deleteTree(Node* node) {
     delete node;
 }
 
-// ================== Вставка ==================
+// Вставка
 void BinaryTree::insert(const string& key) {
     Node* newNode = new Node(key);
     if (!root) {
@@ -53,7 +52,7 @@ void BinaryTree::insert(const string& key) {
     }
 }
 
-// ================== Поиск ==================
+// Поиск
 bool BinaryTree::search(const string& key) {
     if (!root) return false;
 
@@ -73,7 +72,7 @@ bool BinaryTree::search(const string& key) {
     return false;
 }
 
-// ================== Сохранение / загрузка ==================
+// Сохранение
 void BinaryTree::saveToFile(const string& fileName) {
     DynamicArray arr;
     arr.init(10);
@@ -93,6 +92,7 @@ void BinaryTree::saveToFile(const string& fileName) {
     arr.destroy();
 }
 
+// Загрузка
 void BinaryTree::loadFromFile(const string& fileName) {
     DynamicArray arr;
     arr.init(10);
@@ -127,7 +127,7 @@ void BinaryTree::loadFromFile(const string& fileName) {
     arr.destroy();
 }
 
-// ================== Проверка full ==================
+// Проверка full
 bool BinaryTree::isFullNode(Node* node) const {
     if (!node) return true;
 
@@ -144,28 +144,29 @@ bool BinaryTree::isFull() const {
     return isFullNode(root);
 }
 
-// ================== Обходы ==================
-void BinaryTree::inorder(Node* node) {
+// Обходы 
+void BinaryTree::inorder(Node* node) {      // Центрированный
     if (!node) return;
     inorder(node->left);
     cout << node->key << " ";
     inorder(node->right);
 }
 
-void BinaryTree::preorder(Node* node) {
+void BinaryTree::preorder(Node* node) {     // В прямом порядке
     if (!node) return;
     cout << node->key << " ";
     preorder(node->left);
     preorder(node->right);
 }
 
-void BinaryTree::postorder(Node* node) {
+void BinaryTree::postorder(Node* node) {    // В обратном порядке
     if (!node) return;
     postorder(node->left);
     postorder(node->right);
     cout << node->key << " ";
 }
 
+// Вывод
 void BinaryTree::printInorder() {
     cout << "Inorder обход: ";
     inorder(root);
@@ -208,17 +209,16 @@ void BinaryTree::printBFS() {
     cout << endl;
 }
 
-// ================== CLI интерфейс ==================
 void runBinaryTree(int argc, char* argv[]) {
     BinaryTree tree;
     string fileName;
     string query;
 
-    for (int i = 1; i < argc; ++i) {
+    for (int i = 1; i < argc; ++i) { // Обработка аргументов командной строки
         if (strcmp(argv[i], "--file") == 0 && i + 1 < argc) {
-            fileName = argv[++i];
+            fileName = argv[++i]; // Получение имени файла из аргумента
         } else if (strcmp(argv[i], "--query") == 0 && i + 1 < argc) {
-            query = argv[++i];
+            query = argv[++i]; // Получение запроса из аргумента
         }
     }
 
@@ -235,15 +235,15 @@ void runBinaryTree(int argc, char* argv[]) {
     }
 
     if (command == "TINSERT") {
-        tree.insert(arg);
+        tree.insert(arg); // Добавление ключа
         if (!fileName.empty()) tree.saveToFile(fileName);
     } else if (command == "TGET") {
-        if (tree.search(arg)) cout << arg << endl;
-        else cout << "Key not found" << endl;
+        if (tree.search(arg)) cout << arg << endl; // Поиск ключа
+        else cout << "Ключ не найден" << endl;
     } else if (command == "TFULL") {
-        cout << (tree.isFull() ? "true" : "false") << endl;
+        cout << (tree.isFull() ? "true" : "false") << endl; // Проверка на полноту
     } else if (command == "TSEARCH") {
-        cout << (tree.search(arg) ? "true" : "false") << endl;
+        cout << (tree.search(arg) ? "true" : "false") << endl; // Проверка на наличие ключа
     } else if (command == "TINORDER") {
         tree.printInorder();
     } else if (command == "TPREORDER") {

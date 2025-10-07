@@ -112,7 +112,7 @@ func runQueue(fileName string, fullQuery string) {
 	case "QPRINT":
 		q.Print()
 	default:
-		fmt.Fprintln(os.Stderr, "Unknown queue command:", command)
+		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
 	}
 
 	q.Destroy()

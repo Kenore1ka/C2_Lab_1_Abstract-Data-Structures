@@ -182,7 +182,7 @@ func runLLinkedList(fileName string, fullQuery string) {
 	case "DPRINT":
 		list.Print()
 	default:
-		fmt.Fprintln(os.Stderr, "Unknown dlinkedlist command:", command)
+		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
 	}
 
 	list.Destroy()

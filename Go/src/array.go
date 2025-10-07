@@ -175,6 +175,6 @@ func runDynamicArray(fileName string, fullQuery string) {
 		}
 		fmt.Println(arr.Get(idx))
 	default:
-		fmt.Fprintln(os.Stderr, "Unknown array command:", command)
+		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
 	}
 }

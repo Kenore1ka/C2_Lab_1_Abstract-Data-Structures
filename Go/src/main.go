@@ -31,18 +31,18 @@ func main() {
 	}
 
 	switch query[0] {
-	case 'M': // DynamicArray
+	case 'M': // Динамический массив
 		runDynamicArray(fileName, query)
-	case 'L': // Single linked list
+	case 'L': // Односвязный список
 		runLinkedList(fileName, query)
-	case 'D': // Doubly linked list
+	case 'D': // Двусвязный список
 		runLLinkedList(fileName, query)
-	case 'Q': // Queue
+	case 'Q': // Очередь
 		runQueue(fileName, query)
-	case 'S': // Stack
+	case 'S': // Стек
 		runStack(fileName, query)
 	default:
-		fmt.Fprintln(os.Stderr, "Unknown query type.")
+		fmt.Fprintln(os.Stderr, "Неизвестная команда.")
 	}
 }
 

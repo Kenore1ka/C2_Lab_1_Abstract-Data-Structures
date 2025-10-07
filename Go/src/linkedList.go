@@ -186,7 +186,7 @@ func runLinkedList(fileName string, fullQuery string) {
 	case "LPRINT":
 		list.Print()
 	default:
-		fmt.Fprintln(os.Stderr, "Unknown linked list command:", command)
+		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
 	}
 
 	list.Destroy()

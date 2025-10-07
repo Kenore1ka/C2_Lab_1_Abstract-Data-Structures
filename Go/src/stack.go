@@ -115,7 +115,7 @@ func runStack(fileName string, fullQuery string) {
 	case "SPRINT":
 		st.Print()
 	default:
-		fmt.Fprintln(os.Stderr, "Unknown stack command:", command)
+		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
 	}
 
 	st.Destroy()
