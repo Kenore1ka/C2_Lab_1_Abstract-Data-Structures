@@ -1,4 +1,5 @@
 #include "binaryTree.h"
+#include "array.h"
 
 #include <cstring>
 #include <fstream>
@@ -7,21 +8,13 @@
 
 using namespace std;
 
-/*
- Конструктор: инициализирует пустое дерево (root = nullptr).
-*/
+// ================== Конструктор / деструктор ==================
 BinaryTree::BinaryTree() : root(nullptr) {}
 
-/*
- Деструктор: освобождает память, удаляя все узлы.
-*/
 BinaryTree::~BinaryTree() {
     deleteTree(root);
 }
 
-/*
- deleteTree: рекурсивно удаляет поддерево, начиная с node.
-*/
 void BinaryTree::deleteTree(Node* node) {
     if (!node) return;
     deleteTree(node->left);
@@ -29,211 +22,203 @@ void BinaryTree::deleteTree(Node* node) {
     delete node;
 }
 
-/*
- insert: публичный метод для вставки ключа в BST.
- Дубликаты не вставляются.
-*/
+// ================== Вставка ==================
 void BinaryTree::insert(const string& key) {
-    root = insertNode(root, key);
-}
-
-/*
- insertNode: рекурсивная вставка в BST.
- Если ключ уже существует, возвращает тот же узел (без вставки).
- Возвращает новый корень поддерева.
-*/
-Node* BinaryTree::insertNode(Node* node, const string& key) {
-    if (node == nullptr) {
-        return new Node(key);
+    Node* newNode = new Node(key);
+    if (!root) {
+        root = newNode;
+        return;
     }
-    if (key < node->key) {
-        node->left = insertNode(node->left, key);
-    } else if (key > node->key) {
-        node->right = insertNode(node->right, key);
-    } else {
-        // дубликат — ничего не делаем
-    }
-    return node;
-}
 
-/*
- remove: публичный метод удаления ключа из дерева.
-*/
-void BinaryTree::remove(const string& key) {
-    root = removeNode(root, key);
-}
+    queue<Node*> q;
+    q.push(root);
 
-/*
- findMin: находит узел с минимальным ключом в поддереве.
-*/
-Node* BinaryTree::findMin(Node* node) {
-    if (!node) return nullptr;
-    while (node->left) node = node->left;
-    return node;
-}
+    while (!q.empty()) {
+        Node* temp = q.front();
+        q.pop();
 
-/*
- removeNode: рекурсивное удаление узла с данным ключом.
- Возвращает новый корень поддерева.
-*/
-Node* BinaryTree::removeNode(Node* node, const string& key) {
-    if (!node) return node;
-
-    if (key < node->key) {
-        node->left = removeNode(node->left, key);
-    } else if (key > node->key) {
-        node->right = removeNode(node->right, key);
-    } else {
-        // найден узел для удаления
-        if (!node->left) {
-            Node* temp = node->right;
-            delete node;
-            return temp;
-        } else if (!node->right) {
-            Node* temp = node->left;
-            delete node;
-            return temp;
+        if (!temp->left) {
+            temp->left = newNode;
+            return;
         } else {
-            // оба поддерева существуют: заменяем на минимальный в правом
-            Node* succ = findMin(node->right);
-            node->key = succ->key;
-            node->right = removeNode(node->right, succ->key);
+            q.push(temp->left);
+        }
+
+        if (!temp->right) {
+            temp->right = newNode;
+            return;
+        } else {
+            q.push(temp->right);
         }
     }
-    return node;
 }
 
-/*
- search: поиск ключа в дереве (итеративно).
- Возвращает true если найден, иначе false.
-*/
+// ================== Поиск ==================
 bool BinaryTree::search(const string& key) {
-    Node* cur = root;
-    while (cur) {
-        if (key < cur->key) cur = cur->left;
-        else if (key > cur->key) cur = cur->right;
-        else return true;
+    if (!root) return false;
+
+    queue<Node*> q;
+    q.push(root);
+
+    while (!q.empty()) {
+        Node* temp = q.front();
+        q.pop();
+
+        if (temp->key == key) return true;
+
+        if (temp->left)  q.push(temp->left);
+        if (temp->right) q.push(temp->right);
     }
+
     return false;
 }
 
-/*
- print: выводит дерево в одну строку — BFS (level-order),
- ключи разделяются пробелом, в конце перевод строки.
-*/
-void BinaryTree::print() {
+// ================== Сохранение / загрузка ==================
+void BinaryTree::saveToFile(const string& fileName) {
+    DynamicArray arr;
+    arr.init(10);
+
+    if (root) {
+        queue<Node*> q;
+        q.push(root);
+        while (!q.empty()) {
+            Node* cur = q.front(); q.pop();
+            arr.add(cur->key);
+            if (cur->left)  q.push(cur->left);
+            if (cur->right) q.push(cur->right);
+        }
+    }
+
+    arr.saveToFile(fileName);
+    arr.destroy();
+}
+
+void BinaryTree::loadFromFile(const string& fileName) {
+    DynamicArray arr;
+    arr.init(10);
+    arr.loadFromFile(fileName);
+
+    int n = arr.length();
+
+    deleteTree(root);
+    root = nullptr;
+
+    if (n == 0) {
+        arr.destroy();
+        return;
+    }
+
+    Node** nodes = new Node*[n];
+    for (int i = 0; i < n; ++i) {
+        nodes[i] = new Node(arr.get(i));
+        nodes[i]->left = nullptr;
+        nodes[i]->right = nullptr;
+    }
+
+    for (int i = 0; i < n; ++i) {
+        int li = 2 * i + 1;
+        int ri = 2 * i + 2;
+        if (li < n) nodes[i]->left  = nodes[li];
+        if (ri < n) nodes[i]->right = nodes[ri];
+    }
+
+    root = nodes[0];
+    delete[] nodes;
+    arr.destroy();
+}
+
+// ================== Проверка full ==================
+bool BinaryTree::isFullNode(Node* node) const {
+    if (!node) return true;
+
+    bool hasLeft  = (node->left  != nullptr);
+    bool hasRight = (node->right != nullptr);
+
+    if (hasLeft && hasRight)
+        return isFullNode(node->left) && isFullNode(node->right);
+
+    return !hasLeft && !hasRight;
+}
+
+bool BinaryTree::isFull() const {
+    return isFullNode(root);
+}
+
+// ================== Обходы ==================
+void BinaryTree::inorder(Node* node) {
+    if (!node) return;
+    inorder(node->left);
+    cout << node->key << " ";
+    inorder(node->right);
+}
+
+void BinaryTree::preorder(Node* node) {
+    if (!node) return;
+    cout << node->key << " ";
+    preorder(node->left);
+    preorder(node->right);
+}
+
+void BinaryTree::postorder(Node* node) {
+    if (!node) return;
+    postorder(node->left);
+    postorder(node->right);
+    cout << node->key << " ";
+}
+
+void BinaryTree::printInorder() {
+    cout << "Inorder обход: ";
+    inorder(root);
+    cout << endl;
+}
+
+void BinaryTree::printPreorder() {
+    cout << "Preorder обход: ";
+    preorder(root);
+    cout << endl;
+}
+
+void BinaryTree::printPostorder() {
+    cout << "Postorder обход: ";
+    postorder(root);
+    cout << endl;
+}
+
+void BinaryTree::printBFS() {
+    cout << "BFS обход: ";
     if (!root) {
         cout << endl;
         return;
     }
+
     queue<Node*> q;
     q.push(root);
     bool first = true;
+
     while (!q.empty()) {
         Node* cur = q.front(); q.pop();
+
         if (!first) cout << " ";
         cout << cur->key;
         first = false;
-        if (cur->left) q.push(cur->left);
+
+        if (cur->left)  q.push(cur->left);
         if (cur->right) q.push(cur->right);
     }
     cout << endl;
 }
 
-/*
- saveNode: сохраняет узлы в файл в порядке inorder (по возрастанию),
- каждое ключ — на отдельной строке.
-*/
-void BinaryTree::saveNode(Node* node, ofstream& file) {
-    if (!node) return;
-    saveNode(node->left, file);
-    file << node->key << endl;
-    saveNode(node->right, file);
-}
-
-/*
- saveToFile: сохраняет дерево в файл (inorder).
-*/
-void BinaryTree::saveToFile(const string& fileName) {
-    ofstream file(fileName);
-    if (!file.is_open()) {
-        cout << "Не удалось открыть файл для записи." << endl;
-        return;
-    }
-    saveNode(root, file);
-    file.close();
-}
-
-/*
- loadNode: читает ключи из потока и вставляет их в дерево (по одной строке/токену).
-*/
-void BinaryTree::loadNode(ifstream& file) {
-    string key;
-    while (file >> key) {
-        insert(key);
-    }
-}
-
-/*
- loadFromFile: загружает дерево из файла (каждая запись — ключ).
-*/
-
-void BinaryTree::loadFromFile(const string& fileName) {
-    ifstream file(fileName);
-    if (!file.is_open()) {
-        cout << "Не удалось открыть файл для чтения." << endl;
-        return;
-    }
-    loadNode(file);
-    file.close();
-}
-
-/*
- isFullNode: рекурсивная проверка свойства "full" для поддерева.
- Возвращает true если каждый узел поддерева имеет 0 или 2 детей.
-*/
-bool BinaryTree::isFullNode(Node* node) const {
-    if (!node) return true;
-    bool l = (node->left != nullptr);
-    bool r = (node->right != nullptr);
-    if (l && r) {
-        return isFullNode(node->left) && isFullNode(node->right);
-    } else if (!l && !r) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/*
- isFull: публичная оболочка для проверки, является ли дерево full.
-*/
-bool BinaryTree::isFull() const {
-    return isFullNode(root);
-}
-
-/*
- runBinaryTree: функция интерфейса командной строки (как в оригинальном проекте).
- Поддерживаем команды:
-  - TINSERT <key>   : вставить ключ и сохранить в файл
-  - TDEL <key> / TREMOVE <key> : удалить ключ и сохранить в файл
-  - TGET <key>      : если ключ есть — вывести его, иначе "Key not found"
-  - TFULL           : вывести "true" или "false" в зависимости от isFull()
-  - TPRINT          : вывести дерево (BFS)
-*/
+// ================== CLI интерфейс ==================
 void runBinaryTree(int argc, char* argv[]) {
     BinaryTree tree;
-
     string fileName;
     string query;
 
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--file") == 0 && i + 1 < argc) {
-            fileName = argv[i + 1];
-            i++;
+            fileName = argv[++i];
         } else if (strcmp(argv[i], "--query") == 0 && i + 1 < argc) {
-            query = argv[i + 1];
-            i++;
+            query = argv[++i];
         }
     }
 
@@ -252,18 +237,20 @@ void runBinaryTree(int argc, char* argv[]) {
     if (command == "TINSERT") {
         tree.insert(arg);
         if (!fileName.empty()) tree.saveToFile(fileName);
-    } else if (command == "TDEL" || command == "TREMOVE") {
-        tree.remove(arg);
-        if (!fileName.empty()) tree.saveToFile(fileName);
     } else if (command == "TGET") {
         if (tree.search(arg)) cout << arg << endl;
         else cout << "Key not found" << endl;
     } else if (command == "TFULL") {
         cout << (tree.isFull() ? "true" : "false") << endl;
-    } else if (command == "TPRINT") {
-        tree.print();
     } else if (command == "TSEARCH") {
-        // backward compatibility: TSEARCH уже раньше использовалась
         cout << (tree.search(arg) ? "true" : "false") << endl;
+    } else if (command == "TINORDER") {
+        tree.printInorder();
+    } else if (command == "TPREORDER") {
+        tree.printPreorder();
+    } else if (command == "TPOSTORDER") {
+        tree.printPostorder();
+    } else if (command == "TBFS") {
+        tree.printBFS();
     }
 }
