@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -std=c++11 -Wall -Wextra
-BUILD_DIR = ../../build
+BUILD_DIR = ../build
 TARGET = dbms
 
 SOURCES = $(wildcard *.cpp)
