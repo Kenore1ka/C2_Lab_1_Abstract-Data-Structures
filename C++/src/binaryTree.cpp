@@ -1,224 +1,132 @@
 #include "binaryTree.h"
-#include "array.h"
-
-#include <cstring>
-#include <fstream>
 #include <iostream>
-#include <queue>
+#include <cstring>
+#include <string>
 
 using namespace std;
 
-BinaryTree::BinaryTree() : root(nullptr) {}
+// Конструктор: инициализируем DynamicArray
+BinaryTree::BinaryTree() {}
 
-BinaryTree::~BinaryTree() {
-    deleteTree(root);
-}
+// Деструктор: освобождаем память, выделенную для DynamicArray
+BinaryTree::~BinaryTree() {}
 
-void BinaryTree::deleteTree(Node* node) {
-    if (!node) return;
-    deleteTree(node->left);
-    deleteTree(node->right);
-    delete node;
-}
-
-// Вставка
+// Вставка: просто добавляем элемент в конец массива.
+// Это автоматически сохраняет свойство полного бинарного дерева.
 void BinaryTree::insert(const string& key) {
-    Node* newNode = new Node(key);
-    if (!root) {
-        root = newNode;
-        return;
-    }
-
-    queue<Node*> q;
-    q.push(root);
-
-    while (!q.empty()) {
-        Node* temp = q.front();
-        q.pop();
-
-        if (!temp->left) {
-            temp->left = newNode;
-            return;
-        } else {
-            q.push(temp->left);
-        }
-
-        if (!temp->right) {
-            temp->right = newNode;
-            return;
-        } else {
-            q.push(temp->right);
-        }
-    }
+    nodes.add(key);
 }
 
-// Поиск
+// Поиск: простой линейный поиск по массиву.
 bool BinaryTree::search(const string& key) {
-    if (!root) return false;
-
-    queue<Node*> q;
-    q.push(root);
-
-    while (!q.empty()) {
-        Node* temp = q.front();
-        q.pop();
-
-        if (temp->key == key) return true;
-
-        if (temp->left)  q.push(temp->left);
-        if (temp->right) q.push(temp->right);
+    for (int i = 0; i < nodes.length(); ++i) {
+        if (nodes.get(i) == key) {
+            return true;
+        }
     }
-
     return false;
 }
 
-// Сохранение
+// Сохранение в файл: делегируем операцию DynamicArray.
 void BinaryTree::saveToFile(const string& fileName) {
-    DynamicArray arr;
-    arr.init(10);
-
-    if (root) {
-        queue<Node*> q;
-        q.push(root);
-        while (!q.empty()) {
-            Node* cur = q.front(); q.pop();
-            arr.add(cur->key);
-            if (cur->left)  q.push(cur->left);
-            if (cur->right) q.push(cur->right);
-        }
-    }
-
-    arr.saveToFile(fileName);
-    arr.destroy();
+    nodes.saveToFile(fileName);
 }
 
-// Загрузка
+// Загрузка из файла: очищаем текущие данные и делегируем операцию DynamicArray.
 void BinaryTree::loadFromFile(const string& fileName) {
-    DynamicArray arr;
-    arr.init(10);
-    arr.loadFromFile(fileName);
-
-    int n = arr.length();
-
-    deleteTree(root);
-    root = nullptr;
-
-    if (n == 0) {
-        arr.destroy();
-        return;
-    }
-
-    Node** nodes = new Node*[n];
-    for (int i = 0; i < n; ++i) {
-        nodes[i] = new Node(arr.get(i));
-        nodes[i]->left = nullptr;
-        nodes[i]->right = nullptr;
-    }
-
-    for (int i = 0; i < n; ++i) {
-        int li = 2 * i + 1;
-        int ri = 2 * i + 2;
-        if (li < n) nodes[i]->left  = nodes[li];
-        if (ri < n) nodes[i]->right = nodes[ri];
-    }
-
-    root = nodes[0];
-    delete[] nodes;
-    arr.destroy();
+    nodes.clear();  
+    nodes.loadFromFile(fileName);
 }
 
-// Проверка full
-bool BinaryTree::isFullNode(Node* node) const {
-    if (!node) return true;
-
-    bool hasLeft  = (node->left  != nullptr);
-    bool hasRight = (node->right != nullptr);
-
-    if (hasLeft && hasRight)
-        return isFullNode(node->left) && isFullNode(node->right);
-
-    return !hasLeft && !hasRight;
-}
-
+// Проверка на то, является ли дерево "full" (каждый узел имеет 0 или 2 потомка)
+// Это верно, если количество элементов N равно 2^k - 1 для некоторого k.
+// Проверить это можно, выяснив, является ли N+1 степенью двойки.
 bool BinaryTree::isFull() const {
-    return isFullNode(root);
+    int n = nodes.length();
+    if (n == 0) {
+        return true; // Пустое дерево считается полным
+    }
+    // Число является степенью двойки, если (n > 0) && ((n & (n - 1)) == 0)
+    int n_plus_1 = n + 1;
+    return (n_plus_1 > 0) && ((n_plus_1 & n) == 0);
 }
 
-// Обходы 
-void BinaryTree::inorder(Node* node) {      // Центрированный
-    if (!node) return;
-    inorder(node->left);
-    cout << node->key << " ";
-    inorder(node->right);
+// --- Реализация обходов дерева ---
+
+// Приватная рекурсивная функция для центрированного обхода
+void BinaryTree::inorder(int index) {
+    if (index >= nodes.length()) return; // Если узла с таким индексом нет
+
+    inorder(2 * index + 1);       // 1. Левое поддерево
+    cout << nodes.get(index) << " "; // 2. Корень
+    inorder(2 * index + 2);       // 3. Правое поддерево
 }
 
-void BinaryTree::preorder(Node* node) {     // В прямом порядке
-    if (!node) return;
-    cout << node->key << " ";
-    preorder(node->left);
-    preorder(node->right);
-}
-
-void BinaryTree::postorder(Node* node) {    // В обратном порядке
-    if (!node) return;
-    postorder(node->left);
-    postorder(node->right);
-    cout << node->key << " ";
-}
-
-// Вывод
+// Публичный метод для запуска центрированного обхода
 void BinaryTree::printInorder() {
     cout << "Inorder обход: ";
-    inorder(root);
+    if (nodes.length() > 0) {
+        inorder(0); // Начинаем с корня (индекс 0)
+    }
     cout << endl;
 }
 
+// Приватная рекурсивная функция для прямого обхода
+void BinaryTree::preorder(int index) {
+    if (index >= nodes.length()) return;
+
+    cout << nodes.get(index) << " "; // 1. Корень
+    preorder(2 * index + 1);      // 2. Левое поддерево
+    preorder(2 * index + 2);      // 3. Правое поддерево
+}
+
+// Публичный метод для запуска прямого обхода
 void BinaryTree::printPreorder() {
     cout << "Preorder обход: ";
-    preorder(root);
+    if (nodes.length() > 0) {
+        preorder(0);
+    }
     cout << endl;
 }
 
+// Приватная рекурсивная функция для обратного обхода
+void BinaryTree::postorder(int index) {
+    if (index >= nodes.length()) return;
+
+    postorder(2 * index + 1);      // 1. Левое поддерево
+    postorder(2 * index + 2);      // 2. Правое поддерево
+    cout << nodes.get(index) << " "; // 3. Корень
+}
+
+// Публичный метод для запуска обратного обхода
 void BinaryTree::printPostorder() {
     cout << "Postorder обход: ";
-    postorder(root);
+    if (nodes.length() > 0) {
+        postorder(0);
+    }
     cout << endl;
 }
 
+// Обход в ширину (BFS) для дерева в массиве - это просто печать массива.
 void BinaryTree::printBFS() {
     cout << "BFS обход: ";
-    if (!root) {
-        cout << endl;
-        return;
-    }
-
-    queue<Node*> q;
-    q.push(root);
-    bool first = true;
-
-    while (!q.empty()) {
-        Node* cur = q.front(); q.pop();
-
-        if (!first) cout << " ";
-        cout << cur->key;
-        first = false;
-
-        if (cur->left)  q.push(cur->left);
-        if (cur->right) q.push(cur->right);
-    }
-    cout << endl;
+    nodes.print(); // Используем встроенный метод печати вашего DynamicArray
 }
 
+// Функция runBinaryTree остается той же самой и не требует изменений,
+// так как публичный интерфейс класса BinaryTree сохранен.
+// Её можно оставить в этом файле или вынести в main.cpp, как у вас было.
+// Для полноты картины, привожу её здесь.
 void runBinaryTree(int argc, char* argv[]) {
     BinaryTree tree;
     string fileName;
     string query;
 
-    for (int i = 1; i < argc; ++i) { // Обработка аргументов командной строки
+    for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--file") == 0 && i + 1 < argc) {
-            fileName = argv[++i]; // Получение имени файла из аргумента
+            fileName = argv[++i];
         } else if (strcmp(argv[i], "--query") == 0 && i + 1 < argc) {
-            query = argv[++i]; // Получение запроса из аргумента
+            query = argv[++i];
         }
     }
 
@@ -235,15 +143,15 @@ void runBinaryTree(int argc, char* argv[]) {
     }
 
     if (command == "TINSERT") {
-        tree.insert(arg); // Добавление ключа
+        tree.insert(arg);
         if (!fileName.empty()) tree.saveToFile(fileName);
     } else if (command == "TGET") {
-        if (tree.search(arg)) cout << arg << endl; // Поиск ключа
+        if (tree.search(arg)) cout << arg << endl;
         else cout << "Ключ не найден" << endl;
     } else if (command == "TFULL") {
-        cout << (tree.isFull() ? "true" : "false") << endl; // Проверка на полноту
+        cout << (tree.isFull() ? "true" : "false") << endl;
     } else if (command == "TSEARCH") {
-        cout << (tree.search(arg) ? "true" : "false") << endl; // Проверка на наличие ключа
+        cout << (tree.search(arg) ? "true" : "false") << endl;
     } else if (command == "TINORDER") {
         tree.printInorder();
     } else if (command == "TPREORDER") {

@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
         runStack(argc, argv);
     } else if (query[0] == 'H') {      // Если команда начинается с 'H', выполняется функция для хэш-таблицы.
         runHashTable(argc, argv);
-    } else if (query[0] == 'T') {      // Если команда начинается с 'T', выполняется функция для AVL-дерева.
+    } else if (query[0] == 'T') {      // Если команда начинается с 'T', выполняется функция для дерева.
         runBinaryTree(argc, argv);
     }
 

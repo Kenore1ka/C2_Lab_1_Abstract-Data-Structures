@@ -6,11 +6,15 @@
 
 using namespace std;
 
-// Инициализирует динамический массив с заданной начальной ёмкостью
-void DynamicArray::init(int initialCapacity) {
-    data = new string[initialCapacity];
+DynamicArray::DynamicArray(int initialCapacity) {
+    // Безопаснее проверить, что capacity > 0
+    capacity = (initialCapacity > 0) ? initialCapacity : 10;
+    data = new string[capacity];
     size = 0;
-    capacity = initialCapacity;
+}
+
+DynamicArray::~DynamicArray() {
+    delete[] data;
 }
 
 // Изменяет ёмкость массива, увеличивая или уменьшая её
@@ -59,7 +63,7 @@ void DynamicArray::remove(int index) {
 }
 
 // Возвращает элемент по индексу, или пустую строку, если индекс некорректен
-string DynamicArray::get(int index) {
+string DynamicArray::get(int index) const{
     if (index < 0 || index >= size) {
         return "";
     }
@@ -75,18 +79,27 @@ void DynamicArray::set(int index, const string& value) {
 }
 
 // Возвращает текущий размер массива
-int DynamicArray::length() { return size; }
+int DynamicArray::length() const { return size; }
 
 // Выводит все элементы массива на экран
-void DynamicArray::print() {
+void DynamicArray::print() const {
     for (int i = 0; i < size; i++) {
         cout << data[i] << " ";
     }
     cout << endl;
 }
 
-// Освобождает выделенную память при завершении работы с массивом
-void DynamicArray::destroy() { delete[] data; }
+void DynamicArray::clear() {
+    // 1. Освобождаем старую память
+    delete[] data;
+    
+    // 2. Устанавливаем параметры по умолчанию (как в конструкторе)
+    capacity = 10; // или какая-то другая начальная ёмкость
+    size = 0;
+
+    // 3. Выделяем новую, пустую область памяти
+    data = new string[capacity];
+}
 
 // Загружает данные из файла в массив, добавляя строки построчно
 void DynamicArray::loadFromFile(const string& fileName) {
@@ -110,7 +123,6 @@ void DynamicArray::saveToFile(const string& fileName) {
 // Выполняет команды над динамическим массивом на основе аргументов командной строки
 void runDynamicArray(int argc, char* argv[]) {
     DynamicArray arr;
-    arr.init(10);
 
     string fileName;
     string query;
@@ -164,6 +176,4 @@ void runDynamicArray(int argc, char* argv[]) {
         int index = stoi(query);
         cout << arr.get(index) << endl;   // Вывод элемента по индексу
     }
-
-    arr.destroy();                        // Освобождение памяти
 }

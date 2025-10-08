@@ -1,52 +1,40 @@
 #pragma once
 
+#include "array.h" // Подключаем ваш DynamicArray
 #include <string>
-#include <fstream>
-
-// Узел бинарного дерева (ключ хранится в виде строки)
-struct Node {
-    std::string key;
-    Node* left;
-    Node* right;
-
-    explicit Node(const std::string& k)
-        : key(k), left(nullptr), right(nullptr) {}
-};
 
 class BinaryTree {
 public:
+    // Конструктор и деструктор
     BinaryTree();
     ~BinaryTree();
 
     // Основные операции
     void insert(const std::string& key);
     bool search(const std::string& key);
-    void print(); // BFS-вывод
 
     // Работа с файлами
     void saveToFile(const std::string& fileName);
     void loadFromFile(const std::string& fileName);
 
     // Проверка, является ли дерево полным (full)
+    // "Полное" (full) дерево - это дерево, в котором каждый узел имеет 0 или 2 потомка.
+    // Для дерева, представленного массивом, это означает, что количество узлов должно быть 2^h - 1.
     bool isFull() const;
 
     // Обходы дерева
     void printInorder();   // Левый — Корень — Правый
     void printPreorder();  // Корень — Левый — Правый
     void printPostorder(); // Левый — Правый — Корень
-    void printBFS();       // Уровень за уровнем (BFS)
+    void printBFS();       // Уровень за уровнем (обход в ширину)
 
 private:
-    Node* root;
+    DynamicArray nodes; // Хранилище для узлов дерева
 
-    // Вспомогательные функции
-    void deleteTree(Node* node);
-    bool isFullNode(Node* node) const;
-
-    // Рекурсивные обходы
-    void inorder(Node* node);
-    void preorder(Node* node);
-    void postorder(Node* node);
+    // Вспомогательные рекурсивные функции для обходов, работающие с индексами
+    void inorder(int index);
+    void preorder(int index);
+    void postorder(int index);
 };
 
 // Интерфейс командной строки

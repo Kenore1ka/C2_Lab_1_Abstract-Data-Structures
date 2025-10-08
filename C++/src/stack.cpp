@@ -1,5 +1,5 @@
 #include "stack.h"
-#include "array.h" // Подключаем заголовочный файл для DynamicArray
+#include "array.h"
 
 #include <cstring>
 #include <fstream>
@@ -49,12 +49,11 @@ void Stack::destroy() {
 void Stack::loadFromFile(const string& fileName) {
     ifstream file(fileName);
     if (!file.is_open()) {
-        return; // Файла еще нет, это нормально.
+        return;
     }
 
     // Создаем временный динамический массив для хранения строк из файла.
     DynamicArray tempArray;
-    tempArray.init(10); // Инициализируем с начальной емкостью 10.
 
     string value;
     // Считываем все строки из файла в наш временный массив.
@@ -68,9 +67,6 @@ void Stack::loadFromFile(const string& fileName) {
     for (int i = tempArray.length() - 1; i >= 0; --i) {
         push(tempArray.get(i));
     }
-
-    // Очищаем память, выделенную под временный массив.
-    tempArray.destroy();
 }
 
 // Сохранение стека в файл. Эта функция остается простой.
