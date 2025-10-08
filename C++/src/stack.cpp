@@ -1,55 +1,31 @@
 #include "stack.h"
+#include "array.h" // Подключаем заголовочный файл для DynamicArray
 
-#include <cstring> // Для strcmp
-#include <fstream> // Для работы с файлами
+#include <cstring>
+#include <fstream>
 #include <iostream>
-#include <functional>
 
 using namespace std;
 
-// Инициализация стека. Устанавливает указатель вершины стека в nullptr.
-void Stack::init() { 
-    top = nullptr; 
+// Инициализация стека.
+void Stack::init() {
+    top = nullptr;
 }
 
-// Добавление элемента в стек.
+// Добавление элемента на вершину стека.
 void Stack::push(const string& value) {
-    // Создаем новый узел стека.
-    StackNode* newNode = new StackNode{value, nullptr};
-    // Если стек пуст, новый узел становится вершиной стека.
-    if (top == nullptr) {
-        top = newNode;
-    } else {
-        // Иначе, находим последний элемент стека.
-        StackNode* temp = top;
-        while (temp->next != nullptr) {
-            temp = temp->next;
-        } // от ццикла избавится
-        // Новый узел становится следующим после последнего элемента.
-        temp->next = newNode;
-    }
+    StackNode* newNode = new StackNode{value, top};
+    top = newNode;
 }
 
-// Удаление элемента из стека.
+// Удаление элемента с вершины стека.
 void Stack::pop() {
-    // Если стек пуст, ничего не делаем.
     if (top == nullptr) {
         return;
     }
-    // Если в стеке только один элемент, удаляем его.
-    if (top->next == nullptr) {
-        delete top;
-        top = nullptr;
-    } else {
-        // Иначе, находим предпоследний элемент стека.
-        StackNode* temp = top;
-        while (temp->next->next != nullptr) {
-            temp = temp->next;
-        }
-        // Удаляем последний элемент.
-        delete temp->next;
-        temp->next = nullptr;
-    }
+    StackNode* temp = top;
+    top = top->next;
+    delete temp;
 }
 
 // Вывод содержимого стека в консоль.
@@ -65,25 +41,43 @@ void Stack::print() {
 // Освобождение памяти, занимаемой стеком.
 void Stack::destroy() {
     while (top != nullptr) {
-        pop(); // Последовательно удаляем элементы из стека.
+        pop();
     }
 }
 
-// Загрузка стека из файла.
+// Загрузка стека из файла с использованием DynamicArray.
 void Stack::loadFromFile(const string& fileName) {
     ifstream file(fileName);
+    if (!file.is_open()) {
+        return; // Файла еще нет, это нормально.
+    }
+
+    // Создаем временный динамический массив для хранения строк из файла.
+    DynamicArray tempArray;
+    tempArray.init(10); // Инициализируем с начальной емкостью 10.
+
     string value;
-    // Читаем строки из файла и добавляем их в стек.
+    // Считываем все строки из файла в наш временный массив.
     while (file >> value) {
-        push(value);
+        tempArray.add(value);
     }
     file.close();
+
+    // Теперь проходим по временному массиву С КОНЦА В НАЧАЛО,
+    // чтобы правильно воссоздать стек.
+    for (int i = tempArray.length() - 1; i >= 0; --i) {
+        push(tempArray.get(i));
+    }
+
+    // Очищаем память, выделенную под временный массив.
+    tempArray.destroy();
 }
 
-// Сохранение стека в файл.
+// Сохранение стека в файл. Эта функция остается простой.
 void Stack::saveToFile(const string& fileName) {
     ofstream file(fileName);
     StackNode* temp = top;
+    // Просто проходим по стеку от вершины к основанию и записываем в файл.
     while (temp != nullptr) {
         file << temp->data << endl;
         temp = temp->next;
@@ -92,7 +86,7 @@ void Stack::saveToFile(const string& fileName) {
 }
 
 
-// Функция для управления стеком через командную строку.
+// Функция для управления стеком через командную строку (остается без изменений).
 void runStack(int argc, char* argv[]) {
     Stack stack;
     stack.init();
@@ -100,23 +94,21 @@ void runStack(int argc, char* argv[]) {
     string fileName;
     string query;
 
-    // Разбор аргументов командной строки.
     for (int i = 1; i < argc; i++) {
-        // Поиск аргумента --file и имени файла.
         if (strcmp(argv[i], "--file") == 0 && i + 1 < argc) {
             fileName = argv[i + 1];
-            i++; // Пропускаем следующий аргумент (имя файла).
-        // Поиск аргумента --query и запроса.
+            i++;
         } else if (strcmp(argv[i], "--query") == 0 && i + 1 < argc) {
             query = argv[i + 1];
-            i++; // Пропускаем следующий аргумент (запрос).
+            i++;
         }
     }
 
-    stack.loadFromFile(fileName);
+    if (!fileName.empty()) {
+        stack.loadFromFile(fileName);
+    }
 
     string command;
-    // Разделение запроса на команду и значение.
     size_t pos = query.find(' ');
     if (pos != string::npos) {
         command = query.substr(0, pos);
@@ -125,13 +117,16 @@ void runStack(int argc, char* argv[]) {
         command = query;
     }
 
-    // Выполнение команды.
     if (command == "SPUSH") {
         stack.push(query);
-        stack.saveToFile(fileName);
+        if (!fileName.empty()) {
+            stack.saveToFile(fileName);
+        }
     } else if (command == "SPOP") {
         stack.pop();
-        stack.saveToFile(fileName);
+        if (!fileName.empty()) {
+            stack.saveToFile(fileName);
+        }
     } else if (command == "SPRINT") {
         stack.print();
     }
