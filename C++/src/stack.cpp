@@ -24,7 +24,7 @@ void Stack::push(const string& value) {
         StackNode* temp = top;
         while (temp->next != nullptr) {
             temp = temp->next;
-        }
+        } // от ццикла избавится
         // Новый узел становится следующим после последнего элемента.
         temp->next = newNode;
     }

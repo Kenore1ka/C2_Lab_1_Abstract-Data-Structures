@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <sstream>
 
 using namespace std;
 
@@ -128,6 +129,80 @@ void LinkedList::saveToFile(const string& fileName) {
     file.close();
 }
 
+void LinkedList::addBefore(const string& target, const string& value) {
+    if (head == nullptr) return;
+
+    if (head->data == target) {
+        addToHead(value);
+        return;
+    }
+
+    ListNode* prev = head;
+    while (prev->next != nullptr && prev->next->data != target) {
+        prev = prev->next;
+    }
+    if (prev->next == nullptr) {
+        return;
+    }
+
+    ListNode* newNode = new ListNode{value, prev->next};
+    prev->next = newNode;
+}
+
+void LinkedList::addAfter(const string& target, const string& value) {
+    ListNode* node = head;
+    while (node != nullptr && node->data != target) {
+        node = node->next;
+    }
+    if (node == nullptr) return;
+
+    ListNode* newNode = new ListNode{value, node->next};
+    node->next = newNode;
+    if (node == tail) {
+        tail = newNode;
+    }
+}
+
+void LinkedList::removeBefore(const string& target) {
+    if (head == nullptr) return;
+    if (head->data == target) return;
+    if (head->next != nullptr && head->next->data == target) {
+        removeFromHead();
+        return;
+    }
+
+    ListNode* prev = head;
+    while (prev->next != nullptr && prev->next->next != nullptr && prev->next->next->data != target) {
+        prev = prev->next;
+    }
+    if (prev->next == nullptr || prev->next->next == nullptr) {
+        return;
+    }
+    // remove prev->next
+    ListNode* nodeToRemove = prev->next;
+    prev->next = nodeToRemove->next;
+    if (nodeToRemove == tail) {
+        tail = prev;
+    }
+    delete nodeToRemove;
+}
+
+void LinkedList::removeAfter(const string& target) {
+    ListNode* node = head;
+    while (node != nullptr && node->data != target) {
+        node = node->next;
+    }
+    if (node == nullptr) return;
+    if (node->next == nullptr) return;
+
+    ListNode* nodeToRemove = node->next;
+    node->next = nodeToRemove->next;
+    if (nodeToRemove == tail) {
+        tail = node;
+    }
+    delete nodeToRemove;
+}
+
 // Функция запуска работы со списком, обработка команд из аргументов командной строки
 void runLinkedList(int argc, char* argv[]) {
     LinkedList list;
@@ -146,36 +221,84 @@ void runLinkedList(int argc, char* argv[]) {
         }
     }
 
-    list.loadFromFile(fileName);
+    if (!fileName.empty())
+        list.loadFromFile(fileName);
 
     string command;
+    string rest;
     size_t pos = query.find(' ');
     if (pos != string::npos) {
         command = query.substr(0, pos);
-        query = query.substr(pos + 1);
+        rest = query.substr(pos + 1);
     } else {
         command = query;
     }
 
+    // удобное разбивание аргументов запроса на токены (target / value)
+    istringstream iss(rest);
+    string token1, token2;
+    iss >> token1;
+    iss >> token2; // может остаться пустым
+
     if (command == "LPUSH") {
-        list.addToHead(query);  // Добавление элемента в начало списка
-        list.saveToFile(fileName);
-    } else if (command == "LAPPEND") {
-        list.addToTail(query);  // Добавление элемента в конец списка
-        list.saveToFile(fileName);
-    } else if (command == "LREMOVEHEAD") {
-        list.removeFromHead();  // Удаление элемента с головы списка
-        list.saveToFile(fileName);
-    } else if (command == "LREMOVETAIL") {
-        list.removeFromTail();  // Удаление элемента с конца списка
-        list.saveToFile(fileName);
-    } else if (command == "LREMOVE") {
-        list.removeByValue(query);  // Удаление элемента по значению
-        list.saveToFile(fileName);
-    } else if (command == "LSEARCH") {
-        cout << (list.search(query) ? "true" : "false") << endl;    // Поиск элемента по значению
-    } else if (command == "LPRINT") {
+        if (!token1.empty()) {
+            list.addToHead(token1);
+            if (!fileName.empty()) list.saveToFile(fileName);
+        }
+    } 
+    else if (command == "LAPPEND") {
+        if (!token1.empty()) {
+            list.addToTail(token1);
+            if (!fileName.empty()) list.saveToFile(fileName);
+        }
+    } 
+    else if (command == "LREMOVEHEAD") {
+        list.removeFromHead();
+        if (!fileName.empty()) list.saveToFile(fileName);
+    } 
+    else if (command == "LREMOVETAIL") {
+        list.removeFromTail();
+        if (!fileName.empty()) list.saveToFile(fileName);
+    } 
+    else if (command == "LREMOVE") {
+        if (!token1.empty()) {
+            list.removeByValue(token1);
+            if (!fileName.empty()) list.saveToFile(fileName);
+        }
+    } 
+    else if (command == "LSEARCH") {
+        if (!token1.empty())
+            cout << (list.search(token1) ? "true" : "false") << endl;
+    } 
+    else if (command == "LPRINT") {
         list.print();
+    } 
+    else if (command == "LADDTO") {
+        if (!token1.empty() && !token2.empty()) {
+            list.addBefore(token1, token2);
+            if (!fileName.empty()) list.saveToFile(fileName);
+        }
+    } 
+    else if (command == "LADDAFTER") {
+        // формат: LADDAFTER <target> <value>  -> вставить <value> после <target>
+        if (!token1.empty() && !token2.empty()) {
+            list.addAfter(token1, token2);
+            if (!fileName.empty()) list.saveToFile(fileName);
+        }
+    } 
+    else if (command == "LREMOVETO") {
+        // формат: LREMOVETO <target>  -> удалить элемент до <target>
+        if (!token1.empty()) {
+            list.removeBefore(token1);
+            if (!fileName.empty()) list.saveToFile(fileName);
+        }
+    } 
+    else if (command == "LREMOVEAFTER") {
+        // формат: LREMOVEAFTER <target> -> удалить элемент после <target>
+        if (!token1.empty()) {
+            list.removeAfter(token1);
+            if (!fileName.empty()) list.saveToFile(fileName);
+        }
     }
 
     list.destroy();

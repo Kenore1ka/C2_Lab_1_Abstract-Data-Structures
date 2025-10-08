@@ -26,6 +26,12 @@ public:
     void destroy();                       // Очистка списка.
     void loadFromFile(const std::string& fileName); // Загрузка из файла.
     void saveToFile(const std::string& fileName);   // Сохранение в файл.
+
+    // Новые операции:
+    void addBefore(const std::string& target, const std::string& value); // вставить до target
+    void addAfter(const std::string& target, const std::string& value);  // вставить после target
+    void removeBefore(const std::string& target); // удалить элемент до target
+    void removeAfter(const std::string& target);  // удалить элемент после target
 };
 
 // Запуск списка с использованием командной строки.
