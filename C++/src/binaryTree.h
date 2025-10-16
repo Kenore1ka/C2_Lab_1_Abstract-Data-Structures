@@ -1,7 +1,7 @@
 #pragma once
 
-#include "array.h" // Подключаем ваш DynamicArray
 #include <string>
+#include <fstream> 
 
 class BinaryTree {
 public:
@@ -19,7 +19,6 @@ public:
 
     // Проверка, является ли дерево полным (full)
     // "Полное" (full) дерево - это дерево, в котором каждый узел имеет 0 или 2 потомка.
-    // Для дерева, представленного массивом, это означает, что количество узлов должно быть 2^h - 1.
     bool isFull() const;
 
     // Обходы дерева
@@ -29,12 +28,27 @@ public:
     void printBFS();       // Уровень за уровнем (обход в ширину)
 
 private:
-    DynamicArray nodes; // Хранилище для узлов дерева
+    // Внутренняя структура для узла дерева
+    struct Node {
+        std::string key;
+        Node* left;
+        Node* right;
 
-    // Вспомогательные рекурсивные функции для обходов, работающие с индексами
-    void inorder(int index);
-    void preorder(int index);
-    void postorder(int index);
+        // Конструктор для удобного создания узлов
+        Node(const std::string& k) : key(k), left(nullptr), right(nullptr) {}
+    };
+
+    Node* root; // Указатель на корневой узел
+
+    // Вспомогательные рекурсивные функции
+    Node* insert(Node* node, const std::string& key); // Изменено для BST
+    void deleteTree(Node* node);
+    void saveNode(Node* node, std::ofstream& file);
+    void loadNode(std::ifstream& file);
+    bool isFullNode(Node* node) const;
+    void inorder(Node* node);
+    void preorder(Node* node);
+    void postorder(Node* node);
 };
 
 // Интерфейс командной строки

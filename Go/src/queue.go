@@ -7,25 +7,27 @@ import (
 	"strings"
 )
 
-// QueueNode — узел очереди
+// QueueNode представляет узел очереди.
 type QueueNode struct {
 	data string
 	next *QueueNode
 }
 
-// Queue — очередь FIFO
+// Queue представляет очередь.
 type Queue struct {
 	front *QueueNode
 	rear  *QueueNode
 }
 
+// Init инициализирует очередь.
 func (q *Queue) Init() {
 	q.front = nil
 	q.rear = nil
 }
 
+// Enqueue добавляет элемент в конец очереди.
 func (q *Queue) Enqueue(value string) {
-	newNode := &QueueNode{data: value, next: nil}
+	newNode := &QueueNode{data: value}
 	if q.rear != nil {
 		q.rear.next = newNode
 	}
@@ -35,85 +37,107 @@ func (q *Queue) Enqueue(value string) {
 	}
 }
 
+// Dequeue удаляет элемент из начала очереди.
 func (q *Queue) Dequeue() {
 	if q.front == nil {
 		return
 	}
-	temp := q.front
 	q.front = q.front.next
 	if q.front == nil {
 		q.rear = nil
 	}
-	_ = temp
 }
 
+// Print выводит содержимое очереди.
 func (q *Queue) Print() {
-	first := true
-	for cur := q.front; cur != nil; cur = cur.next {
-		if !first {
-			fmt.Print(" ")
-		}
-		first = false
-		fmt.Print(cur.data)
+	temp := q.front
+	for temp != nil {
+		fmt.Print(temp.data + " ")
+		temp = temp.next
 	}
 	fmt.Println()
 }
 
+// Destroy очищает очередь.
 func (q *Queue) Destroy() {
-	q.front = nil
-	q.rear = nil
+	for q.front != nil {
+		q.Dequeue()
+	}
 }
 
+// LoadFromFile загружает очередь из файла.
 func (q *Queue) LoadFromFile(fileName string) error {
-	f, err := os.Open(fileName)
+	file, err := os.Open(fileName)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		q.Enqueue(scanner.Text())
 	}
 	return scanner.Err()
 }
 
+// SaveToFile сохраняет очередь в файл.
 func (q *Queue) SaveToFile(fileName string) error {
-	f, err := os.Create(fileName)
+	file, err := os.Create(fileName)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	for cur := q.front; cur != nil; cur = cur.next {
-		_, _ = w.WriteString(cur.data + "\n")
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	temp := q.front
+	for temp != nil {
+		_, err := writer.WriteString(temp.data + "\n")
+		if err != nil {
+			return err
+		}
+		temp = temp.next
 	}
-	return w.Flush()
+	return writer.Flush()
 }
 
-func runQueue(fileName string, fullQuery string) {
-	q := Queue{}
-	q.Init()
-	_ = q.LoadFromFile(fileName)
+// runQueue выполняет команды над очередью.
+func runQueue(args []string) {
+	queue := &Queue{}
+	queue.Init()
+	defer queue.Destroy()
 
-	parts := strings.SplitN(fullQuery, " ", 2)
+	var fileName, query string
+	for i := 0; i < len(args); i++ {
+		if args[i] == "--file" && i+1 < len(args) {
+			fileName = args[i+1]
+			i++
+		} else if args[i] == "--query" && i+1 < len(args) {
+			query = args[i+1]
+			i++
+		}
+	}
+
+	if fileName != "" {
+		queue.LoadFromFile(fileName)
+	}
+
+	parts := strings.SplitN(query, " ", 2)
 	command := parts[0]
-	arg := ""
+	var value string
 	if len(parts) > 1 {
-		arg = parts[1]
+		value = parts[1]
 	}
 
 	switch command {
 	case "QPUSH":
-		q.Enqueue(arg)
-		_ = q.SaveToFile(fileName)
+		queue.Enqueue(value)
+		if fileName != "" {
+			queue.SaveToFile(fileName)
+		}
 	case "QPOP":
-		q.Dequeue()
-		_ = q.SaveToFile(fileName)
+		queue.Dequeue()
+		if fileName != "" {
+			queue.SaveToFile(fileName)
+		}
 	case "QPRINT":
-		q.Print()
-	default:
-		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
+		queue.Print()
 	}
-
-	q.Destroy()
 }

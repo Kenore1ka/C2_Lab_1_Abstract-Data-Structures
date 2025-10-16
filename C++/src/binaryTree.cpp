@@ -1,132 +1,264 @@
 #include "binaryTree.h"
-#include <iostream>
 #include <cstring>
-#include <string>
+#include <fstream>
+#include <iostream>
+#include <queue>
+#include <string> // для std::stoi
 
 using namespace std;
 
-// Конструктор: инициализируем DynamicArray
-BinaryTree::BinaryTree() {}
+/*
+ Конструктор: инициализирует пустое дерево (root = nullptr).
+*/
+BinaryTree::BinaryTree() : root(nullptr) {}
 
-// Деструктор: освобождаем память, выделенную для DynamicArray
-BinaryTree::~BinaryTree() {}
-
-// Вставка: просто добавляем элемент в конец массива.
-// Это автоматически сохраняет свойство полного бинарного дерева.
-void BinaryTree::insert(const string& key) {
-    nodes.add(key);
+/*
+ Деструктор: освобождает память, удаляя все узлы.
+*/
+BinaryTree::~BinaryTree() {
+    deleteTree(root);
 }
 
-// Поиск: простой линейный поиск по массиву.
-bool BinaryTree::search(const string& key) {
-    for (int i = 0; i < nodes.length(); ++i) {
-        if (nodes.get(i) == key) {
-            return true;
+/*
+ deleteTree: рекурсивно удаляет поддерево, начиная с node.
+*/
+void BinaryTree::deleteTree(Node* node) {
+    if (!node) return;
+    deleteTree(node->left);
+    deleteTree(node->right);
+    delete node;
+}
+
+/*
+ insert (public): публичный метод для вставки ключа.
+ Запускает рекурсивную вставку от корня.
+*/
+void BinaryTree::insert(const std::string& key) {
+    root = insert(root, key);
+}
+
+/*
+ insert (private): рекурсивный метод для вставки в бинарное дерево ПОИСКА.
+*/
+BinaryTree::Node* BinaryTree::insert(Node* node, const std::string& key) {
+    // Если дошли до пустого места - создаем новый узел
+    if (node == nullptr) {
+        return new Node(key);
+    }
+
+    // Преобразуем строки в числа для сравнения
+    int key_val = std::stoi(key);
+    int node_val = std::stoi(node->key);
+
+    // Идем в левое или правое поддерево
+    if (key_val < node_val) {
+        node->left = insert(node->left, key);
+    } else if (key_val > node_val) {
+        node->right = insert(node->right, key);
+    }
+
+    // Если ключи равны, ничего не делаем, дубликаты не вставляем
+    return node;
+}
+
+
+/*
+ search: поиск ключа в бинарном дереве ПОИСКА.
+ Возвращает true если найден, иначе false. Это эффективнее, чем BFS.
+*/
+bool BinaryTree::search(const std::string& key) {
+    Node* current = root;
+    int key_val = std::stoi(key);
+
+    while (current != nullptr) {
+        int current_val = std::stoi(current->key);
+        if (key_val == current_val) {
+            return true; // Ключ найден
+        } else if (key_val < current_val) {
+            current = current->left; // Идём налево
+        } else {
+            current = current->right; // Идём направо
         }
     }
-    return false;
+    return false; // Ключ не найден
 }
 
-// Сохранение в файл: делегируем операцию DynamicArray.
+/*
+ saveNode: сохраняет узлы в файл в порядке PRE-ORDER (корень-левый-правый),
+ чтобы правильно восстановить структуру дерева при загрузке.
+*/
+void BinaryTree::saveNode(Node* node, std::ofstream& file) {
+    if (!node) return;
+    file << node->key << std::endl; 
+    saveNode(node->left, file);      
+    saveNode(node->right, file);     
+}
+
+/*
+ saveToFile: сохраняет дерево в файл.
+*/
 void BinaryTree::saveToFile(const string& fileName) {
-    nodes.saveToFile(fileName);
-}
-
-// Загрузка из файла: очищаем текущие данные и делегируем операцию DynamicArray.
-void BinaryTree::loadFromFile(const string& fileName) {
-    nodes.clear();  
-    nodes.loadFromFile(fileName);
-}
-
-// Проверка на то, является ли дерево "full" (каждый узел имеет 0 или 2 потомка)
-// Это верно, если количество элементов N равно 2^k - 1 для некоторого k.
-// Проверить это можно, выяснив, является ли N+1 степенью двойки.
-bool BinaryTree::isFull() const {
-    int n = nodes.length();
-    if (n == 0) {
-        return true; // Пустое дерево считается полным
+    ofstream file(fileName);
+    if (!file.is_open()) {
+        cout << "Не удалось открыть файл для записи." << endl;
+        return;
     }
-    // Число является степенью двойки, если (n > 0) && ((n & (n - 1)) == 0)
-    int n_plus_1 = n + 1;
-    return (n_plus_1 > 0) && ((n_plus_1 & n) == 0);
+    saveNode(root, file);
+    file.close();
 }
 
-// --- Реализация обходов дерева ---
-
-// Приватная рекурсивная функция для центрированного обхода
-void BinaryTree::inorder(int index) {
-    if (index >= nodes.length()) return; // Если узла с таким индексом нет
-
-    inorder(2 * index + 1);       // 1. Левое поддерево
-    cout << nodes.get(index) << " "; // 2. Корень
-    inorder(2 * index + 2);       // 3. Правое поддерево
+/*
+ loadNode: читает ключи из потока и вставляет их в дерево.
+*/
+void BinaryTree::loadNode(ifstream& file) {
+    string key;
+    while (file >> key) {
+        insert(key);
+    }
 }
 
-// Публичный метод для запуска центрированного обхода
+/*
+ loadFromFile: загружает дерево из файла.
+*/
+void BinaryTree::loadFromFile(const string& fileName) {
+    ifstream file(fileName);
+    if (!file.is_open()) {
+        cout << "Не удалось открыть файл для чтения." << endl;
+        return;
+    }
+    
+    deleteTree(root);
+    root = nullptr;
+    
+    loadNode(file);
+    file.close();
+}
+
+/*
+ isFullNode: рекурсивная проверка свойства "full" для поддерева.
+*/
+bool BinaryTree::isFullNode(Node* node) const {
+    if (!node) return true;
+    
+    bool hasLeft = (node->left != nullptr);
+    bool hasRight = (node->right != nullptr);
+    
+    if (hasLeft && hasRight) {
+        return isFullNode(node->left) && isFullNode(node->right);
+    } else if (!hasLeft && !hasRight) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/*
+ isFull: публичная оболочка для проверки, является ли дерево full.
+*/
+bool BinaryTree::isFull() const {
+    return isFullNode(root);
+}
+
+/*
+ inorder: рекурсивный обход дерева в порядке in-order (левый-корень-правый).
+*/
+void BinaryTree::inorder(Node* node) {
+    if (!node) return;
+    inorder(node->left);
+    cout << node->key << " ";
+    inorder(node->right);
+}
+
+/*
+ preorder: рекурсивный обход дерева в порядке pre-order (корень-левый-правый).
+*/
+void BinaryTree::preorder(Node* node) {
+    if (!node) return;
+    cout << node->key << " ";
+    preorder(node->left);
+    preorder(node->right);
+}
+
+/*
+ postorder: рекурсивный обход дерева в порядке post-order (левый-правый-корень).
+*/
+void BinaryTree::postorder(Node* node) {
+    if (!node) return;
+    postorder(node->left);
+    postorder(node->right);
+    cout << node->key << " ";
+}
+
+/*
+ printInorder: публичный метод для in-order обхода.
+*/
 void BinaryTree::printInorder() {
     cout << "Inorder обход: ";
-    if (nodes.length() > 0) {
-        inorder(0); // Начинаем с корня (индекс 0)
-    }
+    inorder(root);
     cout << endl;
 }
 
-// Приватная рекурсивная функция для прямого обхода
-void BinaryTree::preorder(int index) {
-    if (index >= nodes.length()) return;
-
-    cout << nodes.get(index) << " "; // 1. Корень
-    preorder(2 * index + 1);      // 2. Левое поддерево
-    preorder(2 * index + 2);      // 3. Правое поддерево
-}
-
-// Публичный метод для запуска прямого обхода
+/*
+ printPreorder: публичный метод для pre-order обхода.
+*/
 void BinaryTree::printPreorder() {
     cout << "Preorder обход: ";
-    if (nodes.length() > 0) {
-        preorder(0);
-    }
+    preorder(root);
     cout << endl;
 }
 
-// Приватная рекурсивная функция для обратного обхода
-void BinaryTree::postorder(int index) {
-    if (index >= nodes.length()) return;
-
-    postorder(2 * index + 1);      // 1. Левое поддерево
-    postorder(2 * index + 2);      // 2. Правое поддерево
-    cout << nodes.get(index) << " "; // 3. Корень
-}
-
-// Публичный метод для запуска обратного обхода
+/*
+ printPostorder: публичный метод для post-order обхода.
+*/
 void BinaryTree::printPostorder() {
     cout << "Postorder обход: ";
-    if (nodes.length() > 0) {
-        postorder(0);
+    postorder(root);
+    cout << endl;
+}
+
+/*
+ printBFS: публичный метод для BFS обхода.
+*/
+void BinaryTree::printBFS() {
+    if (!root) {
+        cout << endl;
+        return;
+    }
+    
+    queue<Node*> q;
+    q.push(root);
+    bool first = true;
+    
+    while (!q.empty()) {
+        Node* cur = q.front(); 
+        q.pop();
+        
+        if (!first) cout << " ";
+        cout << cur->key;
+        first = false;
+        
+        if (cur->left) q.push(cur->left);
+        if (cur->right) q.push(cur->right);
     }
     cout << endl;
 }
 
-// Обход в ширину (BFS) для дерева в массиве - это просто печать массива.
-void BinaryTree::printBFS() {
-    cout << "BFS обход: ";
-    nodes.print(); // Используем встроенный метод печати вашего DynamicArray
-}
-
-// Функция runBinaryTree остается той же самой и не требует изменений,
-// так как публичный интерфейс класса BinaryTree сохранен.
-// Её можно оставить в этом файле или вынести в main.cpp, как у вас было.
-// Для полноты картины, привожу её здесь.
+/*
+ runBinaryTree: функция интерфейса командной строки.
+*/
 void runBinaryTree(int argc, char* argv[]) {
     BinaryTree tree;
+
     string fileName;
     string query;
 
-    for (int i = 1; i < argc; ++i) {
+    for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--file") == 0 && i + 1 < argc) {
-            fileName = argv[++i];
+            fileName = argv[i + 1];
+            i++;
         } else if (strcmp(argv[i], "--query") == 0 && i + 1 < argc) {
-            query = argv[++i];
+            query = argv[i + 1];
+            i++;
         }
     }
 
@@ -159,6 +291,7 @@ void runBinaryTree(int argc, char* argv[]) {
     } else if (command == "TPOSTORDER") {
         tree.printPostorder();
     } else if (command == "TBFS") {
+        cout << "BFS обход: ";
         tree.printBFS();
     }
 }

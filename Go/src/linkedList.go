@@ -7,187 +7,306 @@ import (
 	"strings"
 )
 
-// ListNode — узел списка
+// ListNode представляет узел односвязного списка.
 type ListNode struct {
 	data string
 	next *ListNode
 }
 
-// LinkedList — односвязный список
+// LinkedList представляет односвязный список.
 type LinkedList struct {
 	head *ListNode
 	tail *ListNode
 }
 
-func (l *LinkedList) Init() {
-	l.head = nil
-	l.tail = nil
+// Init инициализирует список.
+func (ll *LinkedList) Init() {
+	ll.head = nil
+	ll.tail = nil
 }
 
-func (l *LinkedList) AddToHead(value string) {
-	newNode := &ListNode{data: value, next: l.head}
-	l.head = newNode
-	if l.tail == nil {
-		l.tail = l.head
-	}
-}
-
-func (l *LinkedList) AddToTail(value string) {
-	newNode := &ListNode{data: value, next: nil}
-	if l.tail != nil {
-		l.tail.next = newNode
-	}
-	l.tail = newNode
-	if l.head == nil {
-		l.head = l.tail
+// AddToHead добавляет элемент в начало списка.
+func (ll *LinkedList) AddToHead(value string) {
+	newNode := &ListNode{data: value, next: ll.head}
+	ll.head = newNode
+	if ll.tail == nil {
+		ll.tail = ll.head
 	}
 }
 
-func (l *LinkedList) RemoveFromHead() {
-	if l.head == nil {
-		return
+// AddToTail добавляет элемент в конец списка.
+func (ll *LinkedList) AddToTail(value string) {
+	newNode := &ListNode{data: value}
+	if ll.tail != nil {
+		ll.tail.next = newNode
 	}
-	l.head = l.head.next
-	if l.head == nil {
-		l.tail = nil
+	ll.tail = newNode
+	if ll.head == nil {
+		ll.head = ll.tail
 	}
 }
 
-func (l *LinkedList) RemoveFromTail() {
-	if l.tail == nil {
+// RemoveFromHead удаляет элемент с головы списка.
+func (ll *LinkedList) RemoveFromHead() {
+	if ll.head == nil {
 		return
 	}
-	if l.head == l.tail {
-		l.head = nil
-		l.tail = nil
-		return
+	ll.head = ll.head.next
+	if ll.head == nil {
+		ll.tail = nil
 	}
-	cur := l.head
-	for cur.next != nil && cur.next != l.tail {
-		cur = cur.next
-	}
-	cur.next = nil
-	l.tail = cur
 }
 
-func (l *LinkedList) RemoveByValue(value string) {
-	if l.head == nil {
+// RemoveFromTail удаляет элемент с хвоста списка.
+func (ll *LinkedList) RemoveFromTail() {
+	if ll.tail == nil {
 		return
 	}
-	if l.head.data == value {
-		l.RemoveFromHead()
+	if ll.head == ll.tail {
+		ll.head = nil
+		ll.tail = nil
 		return
 	}
-	prev := l.head
-	cur := l.head.next
-	for cur != nil {
-		if cur.data == value {
-			prev.next = cur.next
-			if cur == l.tail {
-				l.tail = prev
+	temp := ll.head
+	for temp.next != ll.tail {
+		temp = temp.next
+	}
+	ll.tail = temp
+	ll.tail.next = nil
+}
+
+// RemoveByValue удаляет узел по значению.
+func (ll *LinkedList) RemoveByValue(value string) {
+	if ll.head == nil {
+		return
+	}
+	if ll.head.data == value {
+		ll.RemoveFromHead()
+		return
+	}
+	temp := ll.head
+	for temp.next != nil {
+		if temp.next.data == value {
+			if temp.next == ll.tail {
+				ll.tail = temp
 			}
+			temp.next = temp.next.next
 			return
 		}
-		prev = cur
-		cur = cur.next
+		temp = temp.next
 	}
 }
 
-func (l *LinkedList) Search(value string) bool {
-	cur := l.head
-	for cur != nil {
-		if cur.data == value {
+// Search ищет элемент по значению.
+func (ll *LinkedList) Search(value string) bool {
+	temp := ll.head
+	for temp != nil {
+		if temp.data == value {
 			return true
 		}
-		cur = cur.next
+		temp = temp.next
 	}
 	return false
 }
 
-func (l *LinkedList) Print() {
-	first := true
-	for cur := l.head; cur != nil; cur = cur.next {
-		if !first {
-			fmt.Print(" ")
-		}
-		first = false
-		fmt.Print(cur.data)
+// Print выводит все элементы списка.
+func (ll *LinkedList) Print() {
+	temp := ll.head
+	for temp != nil {
+		fmt.Print(temp.data + " ")
+		temp = temp.next
 	}
 	fmt.Println()
 }
 
-func (l *LinkedList) Destroy() {
-	l.head = nil
-	l.tail = nil
+// Destroy очищает список.
+func (ll *LinkedList) Destroy() {
+	for ll.head != nil {
+		ll.RemoveFromHead()
+	}
 }
 
-// LoadFromFile — читает слова из файла и добавляет в хвост (поведение как у C++ >>)
-func (l *LinkedList) LoadFromFile(fileName string) error {
-	f, err := os.Open(fileName)
+// LoadFromFile загружает элементы из файла.
+func (ll *LinkedList) LoadFromFile(fileName string) error {
+	file, err := os.Open(fileName)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		l.AddToTail(scanner.Text())
+		ll.AddToTail(scanner.Text())
 	}
 	return scanner.Err()
 }
 
-func (l *LinkedList) SaveToFile(fileName string) error {
-	f, err := os.Create(fileName)
+// SaveToFile сохраняет элементы списка в файл.
+func (ll *LinkedList) SaveToFile(fileName string) error {
+	file, err := os.Create(fileName)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	for cur := l.head; cur != nil; cur = cur.next {
-		_, _ = w.WriteString(cur.data + "\n")
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	temp := ll.head
+	for temp != nil {
+		_, err := writer.WriteString(temp.data + "\n")
+		if err != nil {
+			return err
+		}
+		temp = temp.next
 	}
-	return w.Flush()
+	return writer.Flush()
 }
 
-// runLinkedList — обрабатывает команды списка
-func runLinkedList(fileName string, fullQuery string) {
-	list := LinkedList{}
-	list.Init()
-	_ = list.LoadFromFile(fileName) // если файла нет — получим пустой список
+// AddBefore вставляет элемент перед указанным.
+func (ll *LinkedList) AddBefore(target, value string) {
+	if ll.head == nil {
+		return
+	}
+	if ll.head.data == target {
+		ll.AddToHead(value)
+		return
+	}
+	prev := ll.head
+	for prev.next != nil && prev.next.data != target {
+		prev = prev.next
+	}
+	if prev.next == nil {
+		return
+	}
+	newNode := &ListNode{data: value, next: prev.next}
+	prev.next = newNode
+}
 
-	parts := strings.SplitN(fullQuery, " ", 2)
+// AddAfter вставляет элемент после указанного.
+func (ll *LinkedList) AddAfter(target, value string) {
+	node := ll.head
+	for node != nil && node.data != target {
+		node = node.next
+	}
+	if node == nil {
+		return
+	}
+	newNode := &ListNode{data: value, next: node.next}
+	node.next = newNode
+	if node == ll.tail {
+		ll.tail = newNode
+	}
+}
+
+// RemoveBefore удаляет элемент перед указанным.
+func (ll *LinkedList) RemoveBefore(target string) {
+	if ll.head == nil || ll.head.data == target {
+		return
+	}
+	if ll.head.next != nil && ll.head.next.data == target {
+		ll.RemoveFromHead()
+		return
+	}
+	prev := ll.head
+	for prev.next != nil && prev.next.next != nil && prev.next.next.data != target {
+		prev = prev.next
+	}
+	if prev.next == nil || prev.next.next == nil {
+		return
+	}
+	nodeToRemove := prev.next
+	prev.next = nodeToRemove.next
+	if nodeToRemove == ll.tail {
+		ll.tail = prev
+	}
+}
+
+// RemoveAfter удаляет элемент после указанного.
+func (ll *LinkedList) RemoveAfter(target string) {
+	node := ll.head
+	for node != nil && node.data != target {
+		node = node.next
+	}
+	if node == nil || node.next == nil {
+		return
+	}
+	nodeToRemove := node.next
+	node.next = nodeToRemove.next
+	if nodeToRemove == ll.tail {
+		ll.tail = node
+	}
+}
+
+// runLinkedList выполняет команды над односвязным списком.
+func runLinkedList(args []string) {
+	list := &LinkedList{}
+	list.Init()
+	defer list.Destroy()
+
+	var fileName, query string
+	for i := 0; i < len(args); i++ {
+		if args[i] == "--file" && i+1 < len(args) {
+			fileName = args[i+1]
+			i++
+		} else if args[i] == "--query" && i+1 < len(args) {
+			query = args[i+1]
+			i++
+		}
+	}
+
+	if fileName != "" {
+		list.LoadFromFile(fileName)
+	}
+
+	parts := strings.Fields(query)
 	command := parts[0]
-	arg := ""
+	var token1, token2 string
 	if len(parts) > 1 {
-		arg = parts[1]
+		token1 = parts[1]
+	}
+	if len(parts) > 2 {
+		token2 = parts[2]
 	}
 
 	switch command {
 	case "LPUSH":
-		list.AddToHead(arg)
-		_ = list.SaveToFile(fileName)
+		if token1 != "" {
+			list.AddToHead(token1)
+		}
 	case "LAPPEND":
-		list.AddToTail(arg)
-		_ = list.SaveToFile(fileName)
+		if token1 != "" {
+			list.AddToTail(token1)
+		}
 	case "LREMOVEHEAD":
 		list.RemoveFromHead()
-		_ = list.SaveToFile(fileName)
 	case "LREMOVETAIL":
 		list.RemoveFromTail()
-		_ = list.SaveToFile(fileName)
 	case "LREMOVE":
-		list.RemoveByValue(arg)
-		_ = list.SaveToFile(fileName)
+		if token1 != "" {
+			list.RemoveByValue(token1)
+		}
 	case "LSEARCH":
-		if list.Search(arg) {
-			fmt.Println("true")
-		} else {
-			fmt.Println("false")
+		if token1 != "" {
+			fmt.Println(list.Search(token1))
 		}
 	case "LPRINT":
 		list.Print()
-	default:
-		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
+	case "LADDTO":
+		if token1 != "" && token2 != "" {
+			list.AddBefore(token1, token2)
+		}
+	case "LADDAFTER":
+		if token1 != "" && token2 != "" {
+			list.AddAfter(token1, token2)
+		}
+	case "LREMOVETO":
+		if token1 != "" {
+			list.RemoveBefore(token1)
+		}
+	case "LREMOVEAFTER":
+		if token1 != "" {
+			list.RemoveAfter(token1)
+		}
 	}
 
-	list.Destroy()
+	if fileName != "" {
+		list.SaveToFile(fileName)
+	}
 }

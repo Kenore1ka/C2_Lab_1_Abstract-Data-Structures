@@ -1,49 +1,44 @@
 package main
 
 import (
-	"fmt"
 	"os"
 )
 
-func usageAndExit() {
-	fmt.Fprintf(os.Stderr, "Usage: %s --file <filename> --query <QUERY>\n", os.Args[0])
-	os.Exit(1)
-}
-
 func main() {
-	if len(os.Args) < 5 {
-		usageAndExit()
+	args := os.Args[1:]
+
+	if len(args) < 4 {
+		return
 	}
 
 	var fileName, query string
-	for i := 1; i < len(os.Args); i++ {
-		if os.Args[i] == "--file" && i+1 < len(os.Args) {
-			fileName = os.Args[i+1]
+	for i := 0; i < len(args); i++ {
+		if args[i] == "--file" && i+1 < len(args) {
+			fileName = args[i+1]
 			i++
-		} else if os.Args[i] == "--query" && i+1 < len(os.Args) {
-			query = os.Args[i+1]
+		} else if args[i] == "--query" && i+1 < len(args) {
+			query = args[i+1]
 			i++
 		}
 	}
 
 	if fileName == "" || query == "" {
-		usageAndExit()
+		return
 	}
 
+	// Выбор функции для запуска на основе первой буквы команды.
 	switch query[0] {
-	case 'M': // Динамический массив
-		runDynamicArray(fileName, query)
-	case 'L': // Односвязный список
-		runLinkedList(fileName, query)
-	case 'D': // Двусвязный список
-		runLLinkedList(fileName, query)
-	case 'Q': // Очередь
-		runQueue(fileName, query)
-	case 'S': // Стек
-		runStack(fileName, query)
-	default:
-		fmt.Fprintln(os.Stderr, "Неизвестная команда.")
+	case 'M':
+		runDynamicArray(args)
+	case 'L':
+		runLinkedList(args)
+	case 'D':
+		runDLinkedList(args)
+	case 'Q':
+		runQueue(args)
+	case 'S':
+		runStack(args)
+	// В предоставленном C++ коде не было реализации для 'H' (HashTable) и 'T' (BinaryTree),
+	// поэтому они здесь опущены.
 	}
 }
-
-// go build -o ../build/dbms main.go array.go linkedList.go dlinkedList.go queue.go stack.go 

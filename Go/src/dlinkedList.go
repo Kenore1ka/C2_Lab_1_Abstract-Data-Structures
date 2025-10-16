@@ -7,183 +7,319 @@ import (
 	"strings"
 )
 
-// DlistNode — узел двусвязного списка
-type DlistNode struct {
+// DListNode представляет узел двусвязного списка.
+type DListNode struct {
 	data string
-	next *DlistNode
-	prev *DlistNode
+	next *DListNode
+	prev *DListNode
 }
 
-// DlinkedList — двусвязный список
-type DlinkedList struct {
-	head *DlistNode
-	tail *DlistNode
+// DLinkedList представляет двусвязный список.
+type DLinkedList struct {
+	head *DListNode
+	tail *DListNode
 }
 
-func (l *DlinkedList) Init() {
-	l.head = nil
-	l.tail = nil
+// Init инициализирует список.
+func (dll *DLinkedList) Init() {
+	dll.head = nil
+	dll.tail = nil
 }
 
-func (l *DlinkedList) AddToHead(value string) {
-	newNode := &DlistNode{data: value, next: l.head, prev: nil}
-	if l.head != nil {
-		l.head.prev = newNode
+// AddToHead добавляет элемент в начало списка.
+func (dll *DLinkedList) AddToHead(value string) {
+	newNode := &DListNode{data: value, next: dll.head}
+	if dll.head != nil {
+		dll.head.prev = newNode
 	}
-	l.head = newNode
-	if l.tail == nil {
-		l.tail = l.head
-	}
-}
-
-func (l *DlinkedList) AddToTail(value string) {
-	newNode := &DlistNode{data: value, next: nil, prev: l.tail}
-	if l.tail != nil {
-		l.tail.next = newNode
-	}
-	l.tail = newNode
-	if l.head == nil {
-		l.head = l.tail
+	dll.head = newNode
+	if dll.tail == nil {
+		dll.tail = dll.head
 	}
 }
 
-func (l *DlinkedList) RemoveFromHead() {
-	if l.head == nil {
+// AddToTail добавляет элемент в конец списка.
+func (dll *DLinkedList) AddToTail(value string) {
+	newNode := &DListNode{data: value, prev: dll.tail}
+	if dll.tail != nil {
+		dll.tail.next = newNode
+	}
+	dll.tail = newNode
+	if dll.head == nil {
+		dll.head = dll.tail
+	}
+}
+
+// RemoveFromHead удаляет элемент с головы списка.
+func (dll *DLinkedList) RemoveFromHead() {
+	if dll.head == nil {
 		return
 	}
-	temp := l.head
-	l.head = l.head.next
-	if l.head != nil {
-		l.head.prev = nil
+	dll.head = dll.head.next
+	if dll.head != nil {
+		dll.head.prev = nil
 	} else {
-		l.tail = nil
+		dll.tail = nil
 	}
-	_ = temp
 }
 
-func (l *DlinkedList) RemoveFromTail() {
-	if l.tail == nil {
+// RemoveFromTail удаляет элемент с хвоста списка.
+func (dll *DLinkedList) RemoveFromTail() {
+	if dll.tail == nil {
 		return
 	}
-	temp := l.tail
-	l.tail = l.tail.prev
-	if l.tail != nil {
-		l.tail.next = nil
+	dll.tail = dll.tail.prev
+	if dll.tail != nil {
+		dll.tail.next = nil
 	} else {
-		l.head = nil
+		dll.head = nil
 	}
-	_ = temp
 }
 
-func (l *DlinkedList) RemoveByValue(value string) {
-	for cur := l.head; cur != nil; cur = cur.next {
-		if cur.data == value {
-			if cur.prev != nil {
-				cur.prev.next = cur.next
+// RemoveByValue удаляет узел по значению.
+func (dll *DLinkedList) RemoveByValue(value string) {
+	temp := dll.head
+	for temp != nil {
+		if temp.data == value {
+			if temp.prev != nil {
+				temp.prev.next = temp.next
 			} else {
-				l.head = cur.next
+				dll.head = temp.next
 			}
-			if cur.next != nil {
-				cur.next.prev = cur.prev
+			if temp.next != nil {
+				temp.next.prev = temp.prev
 			} else {
-				l.tail = cur.prev
+				dll.tail = temp.prev
 			}
 			return
 		}
+		temp = temp.next
 	}
 }
 
-func (l *DlinkedList) Search(value string) bool {
-	for cur := l.head; cur != nil; cur = cur.next {
-		if cur.data == value {
+// Search ищет элемент по значению.
+func (dll *DLinkedList) Search(value string) bool {
+	temp := dll.head
+	for temp != nil {
+		if temp.data == value {
 			return true
 		}
+		temp = temp.next
 	}
 	return false
 }
 
-func (l *DlinkedList) Print() {
-	first := true
-	for cur := l.head; cur != nil; cur = cur.next {
-		if !first {
-			fmt.Print(" ")
-		}
-		first = false
-		fmt.Print(cur.data)
+// Print выводит все элементы списка.
+func (dll *DLinkedList) Print() {
+	temp := dll.head
+	for temp != nil {
+		fmt.Print(temp.data + " ")
+		temp = temp.next
 	}
 	fmt.Println()
 }
 
-func (l *DlinkedList) Destroy() {
-	l.head = nil
-	l.tail = nil
+// Destroy очищает список.
+func (dll *DLinkedList) Destroy() {
+	for dll.head != nil {
+		dll.RemoveFromHead()
+	}
 }
 
-func (l *DlinkedList) LoadFromFile(fileName string) error {
-	f, err := os.Open(fileName)
+// LoadFromFile загружает элементы из файла.
+func (dll *DLinkedList) LoadFromFile(fileName string) error {
+	file, err := os.Open(fileName)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		l.AddToTail(scanner.Text())
+		dll.AddToTail(scanner.Text())
 	}
 	return scanner.Err()
 }
 
-func (l *DlinkedList) SaveToFile(fileName string) error {
-	f, err := os.Create(fileName)
+// SaveToFile сохраняет элементы списка в файл.
+func (dll *DLinkedList) SaveToFile(fileName string) error {
+	file, err := os.Create(fileName)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	for cur := l.head; cur != nil; cur = cur.next {
-		_, _ = w.WriteString(cur.data + "\n")
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	temp := dll.head
+	for temp != nil {
+		_, err := writer.WriteString(temp.data + "\n")
+		if err != nil {
+			return err
+		}
+		temp = temp.next
 	}
-	return w.Flush()
+	return writer.Flush()
 }
 
-func runLLinkedList(fileName string, fullQuery string) {
-	list := DlinkedList{}
-	list.Init()
-	_ = list.LoadFromFile(fileName) // если файла нет — продолжим с пустым списком
+// AddBefore вставляет элемент перед указанным.
+func (dll *DLinkedList) AddBefore(target, value string) {
+	if dll.head == nil {
+		return
+	}
+	if dll.head.data == target {
+		dll.AddToHead(value)
+		return
+	}
+	node := dll.head.next
+	for node != nil && node.data != target {
+		node = node.next
+	}
+	if node == nil {
+		return
+	}
+	newNode := &DListNode{data: value, next: node, prev: node.prev}
+	if node.prev != nil {
+		node.prev.next = newNode
+	}
+	node.prev = newNode
+}
 
-	parts := strings.SplitN(fullQuery, " ", 2)
+// AddAfter вставляет элемент после указанного.
+func (dll *DLinkedList) AddAfter(target, value string) {
+	node := dll.head
+	for node != nil && node.data != target {
+		node = node.next
+	}
+	if node == nil {
+		return
+	}
+	newNode := &DListNode{data: value, next: node.next, prev: node}
+	if node.next != nil {
+		node.next.prev = newNode
+	} else {
+		dll.tail = newNode
+	}
+	node.next = newNode
+}
+
+// RemoveBefore удаляет элемент перед указанным.
+func (dll *DLinkedList) RemoveBefore(target string) {
+	if dll.head == nil || dll.head.data == target {
+		return
+	}
+	if dll.head.next != nil && dll.head.next.data == target {
+		dll.RemoveFromHead()
+		return
+	}
+	node := dll.head.next
+	for node != nil && node.data != target {
+		node = node.next
+	}
+	if node == nil || node.prev == nil {
+		return
+	}
+	toRemove := node.prev
+	before := toRemove.prev
+	node.prev = before
+	if before != nil {
+		before.next = node
+	} else {
+		dll.head = node
+	}
+}
+
+// RemoveAfter удаляет элемент после указанного.
+func (dll *DLinkedList) RemoveAfter(target string) {
+	node := dll.head
+	for node != nil && node.data != target {
+		node = node.next
+	}
+	if node == nil || node.next == nil {
+		return
+	}
+	toRemove := node.next
+	after := toRemove.next
+	node.next = after
+	if after != nil {
+		after.prev = node
+	} else {
+		dll.tail = node
+	}
+}
+
+// runDLinkedList выполняет команды над двусвязным списком.
+func runDLinkedList(args []string) {
+	list := &DLinkedList{}
+	list.Init()
+	defer list.Destroy()
+
+	var fileName, query string
+	for i := 0; i < len(args); i++ {
+		if args[i] == "--file" && i+1 < len(args) {
+			fileName = args[i+1]
+			i++
+		} else if args[i] == "--query" && i+1 < len(args) {
+			query = args[i+1]
+			i++
+		}
+	}
+
+	if fileName != "" {
+		list.LoadFromFile(fileName)
+	}
+
+	parts := strings.Fields(query)
 	command := parts[0]
-	arg := ""
+	var token1, token2 string
 	if len(parts) > 1 {
-		arg = parts[1]
+		token1 = parts[1]
+	}
+	if len(parts) > 2 {
+		token2 = parts[2]
 	}
 
 	switch command {
 	case "DPUSH":
-		list.AddToHead(arg)
-		_ = list.SaveToFile(fileName)
+		if token1 != "" {
+			list.AddToHead(token1)
+		}
 	case "DAPPEND":
-		list.AddToTail(arg)
-		_ = list.SaveToFile(fileName)
+		if token1 != "" {
+			list.AddToTail(token1)
+		}
 	case "DREMOVEHEAD":
 		list.RemoveFromHead()
-		_ = list.SaveToFile(fileName)
 	case "DREMOVETAIL":
 		list.RemoveFromTail()
-		_ = list.SaveToFile(fileName)
 	case "DREMOVE":
-		list.RemoveByValue(arg)
-		_ = list.SaveToFile(fileName)
+		if token1 != "" {
+			list.RemoveByValue(token1)
+		}
 	case "DSEARCH":
-		if list.Search(arg) {
-			fmt.Println("true")
-		} else {
-			fmt.Println("false")
+		if token1 != "" {
+			fmt.Println(list.Search(token1))
 		}
 	case "DPRINT":
 		list.Print()
-	default:
-		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
+	case "DADDTO":
+		if token1 != "" && token2 != "" {
+			list.AddBefore(token1, token2)
+		}
+	case "DADDAFTER":
+		if token1 != "" && token2 != "" {
+			list.AddAfter(token1, token2)
+		}
+	case "DREMOVETO":
+		if token1 != "" {
+			list.RemoveBefore(token1)
+		}
+	case "DREMOVEAFTER":
+		if token1 != "" {
+			list.RemoveAfter(token1)
+		}
 	}
 
-	list.Destroy()
+	if fileName != "" {
+		list.SaveToFile(fileName)
+	}
 }

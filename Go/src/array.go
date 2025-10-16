@@ -8,173 +8,185 @@ import (
 	"strings"
 )
 
-// DynamicArray — простая реализация динамического массива строк
+// DynamicArray представляет динамический массив строк.
 type DynamicArray struct {
 	data     []string
+	size     int
 	capacity int
 }
 
-func (a *DynamicArray) Init(initialCapacity int) {
+// NewDynamicArray создает и возвращает новый DynamicArray.
+func NewDynamicArray(initialCapacity int) *DynamicArray {
 	if initialCapacity <= 0 {
-		initialCapacity = 8
+		initialCapacity = 10
 	}
-	a.data = make([]string, 0, initialCapacity)
-	a.capacity = initialCapacity
-}
-
-func (a *DynamicArray) resizeIfNeeded() {
-	if len(a.data) == a.capacity {
-		newCap := a.capacity * 2
-		if newCap == 0 {
-			newCap = 2
-		}
-		newData := make([]string, len(a.data), newCap)
-		copy(newData, a.data)
-		a.data = newData
-		a.capacity = newCap
+	return &DynamicArray{
+		data:     make([]string, initialCapacity),
+		size:     0,
+		capacity: initialCapacity,
 	}
 }
 
-func (a *DynamicArray) Add(value string) {
-	a.resizeIfNeeded()
-	a.data = append(a.data, value)
+// resize изменяет емкость массива.
+func (da *DynamicArray) resize(newCapacity int) {
+	newData := make([]string, newCapacity)
+	copy(newData, da.data[:da.size])
+	da.data = newData
+	da.capacity = newCapacity
 }
 
-func (a *DynamicArray) Insert(index int, value string) {
-	if index < 0 || index > len(a.data) {
+// Add добавляет новый элемент в конец массива.
+func (da *DynamicArray) Add(value string) {
+	if da.size == da.capacity {
+		da.resize(da.capacity * 2)
+	}
+	da.data[da.size] = value
+	da.size++
+}
+
+// Insert вставляет элемент в заданную позицию.
+func (da *DynamicArray) Insert(index int, value string) {
+	if index < 0 || index > da.size {
 		return
 	}
-	a.resizeIfNeeded()
-	a.data = append(a.data, "")           // расширяем
-	copy(a.data[index+1:], a.data[index:]) // сдвиг в право
-	a.data[index] = value
+	if da.size == da.capacity {
+		da.resize(da.capacity * 2)
+	}
+	copy(da.data[index+1:], da.data[index:da.size])
+	da.data[index] = value
+	da.size++
 }
 
-func (a *DynamicArray) Remove(index int) {
-	if index < 0 || index >= len(a.data) {
+// Remove удаляет элемент из массива по индексу.
+func (da *DynamicArray) Remove(index int) {
+	if index < 0 || index >= da.size {
 		return
 	}
-	copy(a.data[index:], a.data[index+1:])
-	a.data = a.data[:len(a.data)-1]
+	copy(da.data[index:], da.data[index+1:da.size])
+	da.size--
 }
 
-func (a *DynamicArray) Get(index int) string {
-	if index < 0 || index >= len(a.data) {
+// Get возвращает элемент по индексу.
+func (da *DynamicArray) Get(index int) string {
+	if index < 0 || index >= da.size {
 		return ""
 	}
-	return a.data[index]
+	return da.data[index]
 }
 
-func (a *DynamicArray) Set(index int, value string) {
-	if index < 0 || index >= len(a.data) {
+// Set устанавливает значение элемента по индексу.
+func (da *DynamicArray) Set(index int, value string) {
+	if index < 0 || index >= da.size {
 		return
 	}
-	a.data[index] = value
+	da.data[index] = value
 }
 
-func (a *DynamicArray) Length() int {
-	return len(a.data)
+// Length возвращает текущий размер массива.
+func (da *DynamicArray) Length() int {
+	return da.size
 }
 
-func (a *DynamicArray) Print() {
-	for i := 0; i < len(a.data); i++ {
-		if i > 0 {
-			fmt.Print(" ")
-		}
-		fmt.Print(a.data[i])
+// Print выводит все элементы массива.
+func (da *DynamicArray) Print() {
+	for i := 0; i < da.size; i++ {
+		fmt.Print(da.data[i] + " ")
 	}
 	fmt.Println()
 }
 
-func (a *DynamicArray) LoadFromFile(fileName string) error {
+// Clear очищает массив.
+func (da *DynamicArray) Clear() {
+	da.capacity = 10
+	da.size = 0
+	da.data = make([]string, da.capacity)
+}
+
+// LoadFromFile загружает данные из файла в массив.
+func (da *DynamicArray) LoadFromFile(fileName string) error {
 	file, err := os.Open(fileName)
 	if err != nil {
-		// если файла нет — оставляем пустой массив (как поведение C++: файл мог отсутствовать)
 		return err
 	}
 	defer file.Close()
+
 	scanner := bufio.NewScanner(file)
-	// сканируем по словам (по умолчанию Scanner.Split(bufio.ScanWords)), чтобы повторять поведение C++ >> operator
 	for scanner.Scan() {
-		a.Add(scanner.Text())
+		da.Add(scanner.Text())
 	}
 	return scanner.Err()
 }
 
-func (a *DynamicArray) SaveToFile(fileName string) error {
-	f, err := os.Create(fileName)
+// SaveToFile сохраняет содержимое массива в файл.
+func (da *DynamicArray) SaveToFile(fileName string) error {
+	file, err := os.Create(fileName)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	for _, s := range a.data {
-		_, _ = w.WriteString(s + "\n")
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for i := 0; i < da.size; i++ {
+		_, err := writer.WriteString(da.data[i] + "\n")
+		if err != nil {
+			return err
+		}
 	}
-	return w.Flush()
+	return writer.Flush()
 }
 
-// runDynamicArray — выполняет команды для массива, интерфейс совместим с исходным.
-func runDynamicArray(fileName string, fullQuery string) {
-	arr := DynamicArray{}
-	arr.Init(10)
-	_ = arr.LoadFromFile(fileName) // игнорируем ошибку: возможно файл отсутствует
+// runDynamicArray выполняет команды над динамическим массивом.
+func runDynamicArray(args []string) {
+	arr := NewDynamicArray(10)
 
-	// разделяем команду и аргументы
-	parts := strings.SplitN(fullQuery, " ", 2)
+	var fileName, query string
+	for i := 0; i < len(args); i++ {
+		if args[i] == "--file" && i+1 < len(args) {
+			fileName = args[i+1]
+			i++
+		} else if args[i] == "--query" && i+1 < len(args) {
+			query = args[i+1]
+			i++
+		}
+	}
+
+	if fileName != "" {
+		arr.LoadFromFile(fileName)
+	}
+
+	parts := strings.SplitN(query, " ", 2)
 	command := parts[0]
-	arg := ""
+	var params string
 	if len(parts) > 1 {
-		arg = parts[1]
+		params = parts[1]
 	}
 
 	switch command {
 	case "MPUSH":
-		arr.Add(arg)
-		if err := arr.SaveToFile(fileName); err != nil {
-			fmt.Fprintln(os.Stderr, "Save error:", err)
-		}
+		arr.Add(params)
+		arr.SaveToFile(fileName)
 	case "MINSERT":
-		// формат: "<index> <value>"
-		sub := strings.SplitN(arg, " ", 2)
-		if len(sub) != 2 {
-			return
-		}
-		idx, err := strconv.Atoi(sub[0])
-		if err != nil {
-			return
-		}
-		arr.Insert(idx, sub[1])
-		_ = arr.SaveToFile(fileName)
+		parts := strings.SplitN(params, " ", 2)
+		index, _ := strconv.Atoi(parts[0])
+		value := parts[1]
+		arr.Insert(index, value)
+		arr.SaveToFile(fileName)
 	case "MDEL":
-		idx, err := strconv.Atoi(arg)
-		if err != nil {
-			return
-		}
-		arr.Remove(idx)
-		_ = arr.SaveToFile(fileName)
+		index, _ := strconv.Atoi(params)
+		arr.Remove(index)
+		arr.SaveToFile(fileName)
 	case "MSET":
-		sub := strings.SplitN(arg, " ", 2)
-		if len(sub) != 2 {
-			return
-		}
-		idx, err := strconv.Atoi(sub[0])
-		if err != nil {
-			return
-		}
-		arr.Set(idx, sub[1])
-		_ = arr.SaveToFile(fileName)
+		parts := strings.SplitN(params, " ", 2)
+		index, _ := strconv.Atoi(parts[0])
+		value := parts[1]
+		arr.Set(index, value)
+		arr.SaveToFile(fileName)
 	case "MLEN":
 		fmt.Println(arr.Length())
 	case "MPRINT":
 		arr.Print()
 	case "MGET":
-		idx, err := strconv.Atoi(arg)
-		if err != nil {
-			return
-		}
-		fmt.Println(arr.Get(idx))
-	default:
-		fmt.Fprintln(os.Stderr, "Неизвестная команда:", command)
+		index, _ := strconv.Atoi(params)
+		fmt.Println(arr.Get(index))
 	}
 }
